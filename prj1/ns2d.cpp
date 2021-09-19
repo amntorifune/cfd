@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const int nc = 500;
+const int nc = 200;
 const double u0 = 1.0;
 const double L0 = 1.0;
 const double nu = 1.004e-6;
@@ -16,7 +16,7 @@ const double dd = 1.0 / nc;
 const double dx = dd;
 const double dy = dd;
 const double dt = cfl * dd / (sqrt(2.0) * sqrt(1.0));
-const double ter = 20.0;
+const double ter = 20;
 const double B0 = 2.0 / (dx * dx) + 2.0 / (dy * dy);
 const double dtau = 1.0 / B0;
 
@@ -198,7 +198,7 @@ void fs1(void) {
 
 void poisson(void) {
     double E = 1e-2;
-    int MAXITER = 100;
+    int MAXITER = 50;
     bool con = false;
     int it = 0;
     while (con == false) {
