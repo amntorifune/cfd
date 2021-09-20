@@ -226,9 +226,9 @@ void poisson(void) {
             break;
         }
     }
-    if (con == true) {
-        printf("Convergence in %d iterations\n", it);
-    }
+    // if (con == true) {
+    //     printf("Convergence in %d iterations\n", it);
+    // }
     bcp();
 }
 
