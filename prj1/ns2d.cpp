@@ -10,7 +10,7 @@ const int nc = 200;
 const double u0 = 1.0;
 const double L0 = 1.0;
 const double nu = 1.004e-6;
-const double Re = 100;
+const double Re = 1000;
 const double cfl = 1.0;
 const double dd = 1.0 / nc;
 const double dx = dd;
@@ -226,9 +226,9 @@ void poisson(void) {
             break;
         }
     }
-    // if (con == true) {
-    //     printf("Convergence in %d iterations\n", it);
-    // }
+    if (con == true) {
+        printf("Convergence in %d iterations\n", it);
+    }
     bcp();
 }
 
