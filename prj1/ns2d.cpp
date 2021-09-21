@@ -10,16 +10,15 @@ const int nc = 200;
 const double u0 = 1.0;
 const double L0 = 1.0;
 const double nu = 1.004e-6;
-const double Re = 1000;
+const double Re = 3000;
 const double cfl = 1.0;
 const double dd = 1.0 / nc;
 const double dx = dd;
 const double dy = dd;
-const double dt = min(cfl * dd / (sqrt(2.0) * sqrt(1.0)), Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
-const double ter = 20;
+const double ter = 40;
 const double B0 = 2.0 / (dx * dx) + 2.0 / (dy * dy);
 const double dtau = 1.0 / B0;
-
+double dt = min(cfl * dd / (sqrt(1.0)), Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
 // a[x][y]
 const int UX = nc + 1;
 const int UY = nc + 2;
@@ -40,7 +39,34 @@ double (*pt)[PY] = P2;
 double (*ug)[NG] = UG;
 double (*vg)[NG] = VG;
 double (*pg)[NG] = PG;
+double maxu = 1;
+double maxv = 0;
 
+void getmax(void) {
+    double tmp = 0;
+    for (int i = 0; i < UX; i ++) {
+        for (int j = 0; j < UY; j ++) {
+            if (abs(u[i][j]) > tmp) {
+                tmp = u[i][j];
+            }
+        }
+    }
+    maxu = tmp;
+    tmp = 0;
+    for (int i = 0; i < VX; i ++) {
+        for (int j = 0; j < VY; j ++) {
+            if (abs(v[i][j]) > tmp) {
+                tmp = v[i][j];
+            }
+        }
+    }
+    maxv = tmp;
+}
+
+void calcdt(void) {
+    getmax();
+    dt = min(cfl * dd / (sqrt(max(maxu, maxv))), Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
+}
 void init(void) {
     for (int i = 0; i < UX; i ++) {
         for (int j = 0; j < UY; j ++) {
@@ -56,7 +82,7 @@ void init(void) {
             ut[i][j] = 0;
         }
     }
-    for (int i = 0; i < UX; i ++) {
+    for (int i = 1; i < UX - 1; i ++) {
         ut[i][UY - 1] = 1;
         ut[i][UY - 2] = 1;
     }
@@ -256,10 +282,12 @@ void fs2(void) {
 }
 
 void ns2d(void) {
-    printf("dt = %lf\n", dt);
+    // printf("dt = %lf\n", dt);
     double t = 0;
     while (t < ter) {
-        printf("\r%lf", t);
+        calcdt();
+        printf("\rt = %lf, dt = %lf", t, dt);
+        fflush(stdout);
         fs1();
         poisson();
         fs2();
