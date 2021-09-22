@@ -374,7 +374,7 @@ void o2f(void) {
 
 int main(int argc, char ** argv) {
     if (argc < 3) {
-        printf("us2d Re time\n");
+        printf("ns2d Re time\n");
         return 0;
     }
     Re = strtod(argv[1], NULL);
