@@ -6,19 +6,19 @@
 
 using namespace std;
 
-const int nc = 200;
+const int nc = 256;
 const double u0 = 1.0;
 const double L0 = 1.0;
 const double nu = 1.004e-6;
-const double Re = 10000;
 const double cfl = 1.0;
 const double dd = 1.0 / nc;
 const double dx = dd;
 const double dy = dd;
-const double ter = 40;
 const double B0 = 2.0 / (dx * dx) + 2.0 / (dy * dy);
 const double dtau = 1.0 / B0;
-double dt = min(cfl * dd / (sqrt(1.0)), Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
+double dt;
+double Re;
+double ter;
 
 // a[x][y]
 const int UX = nc + 1;
@@ -358,7 +358,9 @@ void o2f(void) {
     //     fclose(pf);
     // }
     FILE *fo;
-    fo = fopen("UVP.csv","w+t");
+    char fname[128];
+    sprintf(fname, "UVP_Re%d_t%d.csv", int(Re), int(ter));
+    fo = fopen(fname, "w+t");
 
     if ( fo == NULL ) {
         printf("\nERROR when opening file\n");
@@ -379,7 +381,14 @@ void o2f(void) {
     }
 }
 
-int main(void) {
+int main(int argc, char ** argv) {
+    if (argc < 3) {
+        printf("us2d-up Re time\n");
+        return 0;
+    }
+    Re = strtod(argv[1], NULL);
+    ter = strtod(argv[2], NULL);
+    printf("Re = %lf, T = %lf\n", Re, ter);
 
     init();
     ns2d();
