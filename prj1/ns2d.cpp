@@ -68,6 +68,7 @@ void calcdt(void) {
     getmax();
     dt = min(cfl * dd / (sqrt(max(maxu, maxv))), Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
 }
+
 void init(void) {
     for (int i = 0; i < UX; i ++) {
         for (int j = 0; j < UY; j ++) {
