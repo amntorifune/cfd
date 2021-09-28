@@ -201,34 +201,38 @@ void fs1(void) {
     // double duudx, duvdy, dvvdy, duvdx, ddudxx, ddudyy, ddvdxx, ddvdyy;
     for (int i = 1; i < UX - 1; i ++) {
         for (int j = 1; j < UY - 1; j ++) {
-            // u*(du/dx)
-            double dudx = (u[i + 1][j] - u[i - 1][j]) / (2 * dx);
-            double ududx = u[i][j] * dudx;
-            // u*(dv/dy)
+            // duu / dx
+            double umr = (u[i][j] + u[i + 1][j]) / 2.0;
+            double uml = (u[i][j] + u[i - 1][j]) / 2.0;
+            double duudx = (umr * umr - uml * uml) / dx;
+            //duv / dy
+            double umu = (u[i][j] + u[i][j + 1]) / 2.0;
+            double umd = (u[i][j] + u[i][j - 1]) / 2.0;
             double vmu = (v[i][j] + v[i + 1][j]) / 2.0;
-            double vml = (v[i][j - 1] + v[i + 1][j - 1]) / 2.0;
-            double dvdy = (vmu - vml) / dy;
-            double udvdy = u[i][j] * dvdy;
+            double vmd = (v[i][j - 1] + v[i + 1][j - 1]) / 2.0;
+            double duvdy = (umu * vmu - umd * vmd) / dy;
             // viscousity
             double ddudxx = (u[i - 1][j] - 2 * u[i][j] + u[i + 1][j]) / (dx * dx);
             double ddudyy = (u[i][j - 1] - 2 * u[i][j] + u[i][j + 1]) / (dy * dy);
-            ut[i][j] = u[i][j] + dt * (- ududx - udvdy + (ddudxx + ddudyy) / Re);
+            ut[i][j] = u[i][j] + dt * (- duudx - duvdy + (ddudxx + ddudyy) / Re);
         }
     }
     for (int i = 1; i < VX - 1; i ++) {
         for (int j = 1; j < VY - 1; j ++) {
-            // v*(du/dx)
+            // dyy / dy
+            double vmu = (v[i][j] + v[i][j + 1]) / 2.0;
+            double vmd = (v[i][j] + v[i][j - 1]) / 2.0;
+            double dvvdy = (vmu * vmu - vmd * vmd) / dy;
+            // duv / dx
             double umr = (u[i][j] + u[i][j + 1]) / 2.0;
             double uml = (u[i - 1][j] + u[i - 1][j + 1]) / 2.0;
-            double dudx = (umr - uml) / dx;
-            double vdudx = v[i][j] * dudx;
-            // v*(dv/dy)
-            double dvdy = (v[i][j + 1] - v[i][j - 1]) / (2 * dy);
-            double vdvdy = v[i][j] * dvdy;
+            double vmr = (v[i][j] + v[i + 1][j]) / 2.0;
+            double vml = (v[i][j] + v[i - 1][j]) / 2.0;
+            double duvdx = (umr * vmr - uml * vml) / dx;
             // viscousity
             double ddvdxx = (v[i - 1][j] - 2 * v[i][j] + v[i + 1][j]) / (dx * dx);
             double ddvdyy = (v[i][j - 1] - 2 * v[i][j] + v[i][j + 1]) / (dy * dy);
-            vt[i][j] = v[i][j] + dt * (- vdudx - vdvdy + (ddvdxx + ddvdyy) / Re);
+            vt[i][j] = v[i][j] + dt * (- dvvdy - duvdx + (ddvdxx + ddvdyy) / Re);
         }
     }
     bfu();
@@ -301,9 +305,10 @@ void fs2(void) {
     bcv();
 }
 
-void ns2d(void) {
+void ns2d(FILE* f) {
     // printf("dt = %lf\n", dt);
     double t = 0;
+    int loo = 0;
     while (t < ter) {
         // calcdt();
         fs1();
@@ -313,6 +318,10 @@ void ns2d(void) {
         fflush(stdout);
         t += dt;
         printf("\rt = %5.8lf, poi = %5d, max div = %5.8lf", t, iter, maxdiv);
+        if (loo % 10 == 0) {
+            fprintf(f, "%10.5lf,%5d,%10.5lf\n", t, iter, maxdiv);
+        }
+        loo += 1;
     }
     printf("\n");
 }
@@ -370,7 +379,7 @@ void o2f(void) {
     // }
     FILE *fo;
     char fname[128];
-    sprintf(fname, "UVP_Re%d_t%d.n.csv", int(Re), int(ter));
+    sprintf(fname, "UVP_Re%d_t%d.csv", int(Re), int(ter));
     fo = fopen(fname, "w+t");
 
     if ( fo == NULL ) {
@@ -394,7 +403,7 @@ void o2f(void) {
 
 int main(int argc, char ** argv) {
     if (argc < 3) {
-        printf("ns2dn Re time\n");
+        printf("ns2d Re time\n");
         return 0;
     }
     Re = strtod(argv[1], NULL);
@@ -402,10 +411,20 @@ int main(int argc, char ** argv) {
     dt = min(cfl * dd / (sqrt(2.0)), Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
     printf("Re = %lf, T = %lf, dt = %lf\n", Re, ter, dt);
 
+    char fname[128];
+    sprintf(fname, "monitor_Re%d_t%d.csv", int(Re), int(ter));
+    FILE* fmo = fopen(fname, "w+t");
+    if (fmo == NULL) {
+        printf("ERROR when opening file\n");
+        return 0;
+    }
+    fprintf(fmo, "t,iter,maxdiv\n");
+
     init();
-    ns2d();
+    ns2d(fmo);
     calcgrid();
     o2f();
 
+    fclose(fmo);
     return 0;
 }
