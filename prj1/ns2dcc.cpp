@@ -22,10 +22,10 @@ double ter;
 int iter;
 
 // a[x][y]
-const int UX = nc + 1;
+const int UX = nc + 2;
 const int UY = nc + 2;
 const int VX = nc + 2;
-const int VY = nc + 1;
+const int VY = nc + 2;
 const int PX = nc + 2;
 const int PY = nc + 2;
 const int NG = nc + 1;
@@ -134,22 +134,22 @@ void init(void) {
 void bcu(void) {
     for (int i = 1; i < UX - 1; i ++) {
         u[i][0] = - u[i][1];
-        u[i][UY - 1] = 2.0 - u[i][UY - 2];
+        u[i][UY - 1] = 2 - u[i][UY - 2];
     }
     for (int j = 0; j < UY; j ++) {
-        u[0][j] = 0;
-        u[UX - 1][j] = 0;
+        u[0][j] = - u[1][j];
+        u[UX - 1][j] = - u[UX - 2][j];
     }
 }
 
 void bcv(void) {
     for (int i = 0; i < VX; i ++) {
-        v[i][0] = 0;
-        v[i][VY - 1] = 0;
+        v[i][0] = - v[i][1];
+        v[i][VY - 1] = - v[i][VY - 2];
     }
     for (int j = 1; j < VY - 1; j ++) {
         v[0][j] = - v[1][j];
-        v[VX - 1][j] = - v[VX - 2][j];
+        v[VX - 1][j] = - v[VY - 2][j];
     }
 }
 
@@ -201,34 +201,38 @@ void fs1(void) {
     // double duudx, duvdy, dvvdy, duvdx, ddudxx, ddudyy, ddvdxx, ddvdyy;
     for (int i = 1; i < UX - 1; i ++) {
         for (int j = 1; j < UY - 1; j ++) {
-            // u*(du/dx)
-            double dudx = (u[i + 1][j] - u[i - 1][j]) / (2 * dx);
-            double ududx = u[i][j] * dudx;
-            // u*(dv/dy)
-            double vmu = (v[i][j] + v[i + 1][j]) / 2.0;
-            double vml = (v[i][j - 1] + v[i + 1][j - 1]) / 2.0;
-            double dvdy = (vmu - vml) / dy;
-            double udvdy = u[i][j] * dvdy;
+            // duu / dx
+            double umr = (u[i][j] + u[i + 1][j]) / 2.0;
+            double uml = (u[i][j] + u[i - 1][j]) / 2.0;
+            double duudx = (umr * umr - uml * uml) / dx;
+            // duv / dy
+            double umu = (u[i][j] + u[i][j + 1]) / 2.0;
+            double umd = (u[i][j] + u[i][j - 1]) / 2.0;
+            double vmu = (v[i][j] + v[i][j + 1]) / 2.0;
+            double vmd = (v[i][j] + v[i][j - 1]) / 2.0;
+            double duvdy = (umu * vmu - umd * vmd) / dy;
             // viscousity
             double ddudxx = (u[i - 1][j] - 2 * u[i][j] + u[i + 1][j]) / (dx * dx);
             double ddudyy = (u[i][j - 1] - 2 * u[i][j] + u[i][j + 1]) / (dy * dy);
-            ut[i][j] = u[i][j] + dt * (- ududx - udvdy + (ddudxx + ddudyy) / Re);
+            ut[i][j] = u[i][j] + dt * (- duudx - duvdy + (ddudxx + ddudyy) / Re);
         }
     }
     for (int i = 1; i < VX - 1; i ++) {
         for (int j = 1; j < VY - 1; j ++) {
-            // v*(du/dx)
-            double umr = (u[i][j] + u[i][j + 1]) / 2.0;
-            double uml = (u[i - 1][j] + u[i - 1][j + 1]) / 2.0;
-            double dudx = (umr - uml) / dx;
-            double vdudx = v[i][j] * dudx;
-            // v*(dv/dy)
-            double dvdy = (v[i][j + 1] - v[i][j - 1]) / (2 * dy);
-            double vdvdy = v[i][j] * dvdy;
+            // dvv / dy
+            double vmu = (v[i][j] + v[i][j + 1]) / 2.0;
+            double vmd = (v[i][j] + v[i][j - 1]) / 2.0;
+            double dvvdy = (vmu * vmu - vmd * vmd) / dy;
+            // duv / dx
+            double umr = (u[i][j] + u[i + 1][j]) / 2.0;
+            double uml = (u[i][j] + u[i - 1][j]) / 2.0;
+            double vmr = (v[i][j] + v[i + 1][j]) / 2.0;
+            double vml = (v[i][j] + v[i - 1][j]) / 2.0;
+            double duvdx = (umr * vmr - uml * vml) / dx;
             // viscousity
             double ddvdxx = (v[i - 1][j] - 2 * v[i][j] + v[i + 1][j]) / (dx * dx);
             double ddvdyy = (v[i][j - 1] - 2 * v[i][j] + v[i][j + 1]) / (dy * dy);
-            vt[i][j] = v[i][j] + dt * (- vdudx - vdvdy + (ddvdxx + ddvdyy) / Re);
+            vt[i][j] = v[i][j] + dt * (- dvvdy - duvdx + (ddvdxx + ddvdyy) / Re);
         }
     }
     bfu();
@@ -250,8 +254,8 @@ void poisson(void) {
         con = true;
         for (int i = 1; i < PX - 1; i ++) {
             for (int j = 1; j < PY - 1; j ++) {
-                double dudx = (u[i][j] - u[i - 1][j]) / dx;
-                double dvdy = (v[i][j] - v[i][j - 1]) / dy;
+                double dudx = (u[i + 1][j] - u[i - 1][j]) / (2 * dx);
+                double dvdy = (v[i][j + 1] - v[i][j - 1]) / (2 * dy);
                 double psi = (dudx + dvdy) / dt;
                 double ddpdxx = (p[i - 1][j] - 2 * p[i][j] + p[i + 1][j]) / (dx * dx);
                 double ddpdyy = (p[i][j - 1] - 2 * p[i][j] + p[i][j + 1]) / (dy * dy);
@@ -281,12 +285,12 @@ void poisson(void) {
 void fs2(void) {
     for (int i = 1; i < UX - 1; i ++) {
         for (int j = 1; j < UY - 1; j ++) {
-            ut[i][j] = u[i][j] - dt * (p[i + 1][j] - p[i][j]) / dx;
+            ut[i][j] = u[i][j] - dt * (p[i + 1][j] - p[i - 1][j]) / (2 * dx);
         }
     }
     for (int i = 1; i < VX - 1; i ++) {
         for (int j = 1; j < VY - 1; j ++) {
-            vt[i][j] = v[i][j] - dt * (p[i][j + 1] - p[i][j]) / dy;
+            vt[i][j] = v[i][j] - dt * (p[i][j + 1] - p[i][j - 1]) / (2 * dy);
         }
     }
     bfu();
@@ -320,8 +324,8 @@ void ns2d(void) {
 void calcgrid(void) {
     for (int i = 0; i < NG; i ++) {
         for (int j = 0; j < NG; j ++) {
-            ug[i][j] = (u[i][j] + u[i][j + 1]) / 2.0;
-            vg[i][j] = (v[i][j] + v[i + 1][j]) / 2.0;
+            ug[i][j] = (u[i][j] + u[i + 1][j] + u[i][j + 1] + u[i + 1][j + 1]) / 4.0;
+            vg[i][j] = (v[i][j] + v[i + 1][j] + v[i][j + 1] + v[i + 1][j + 1]) / 4.0;
             pg[i][j] = (p[i][j] + p[i + 1][j] + p[i][j + 1] + p[i + 1][j + 1]) / 4.0;
         }
     }
@@ -368,9 +372,12 @@ void o2f(void) {
     //     }
     //     fclose(pf);
     // }
+    // double (*ug)[NG] = u;
+    // double (*vg)[NG] = v;
+    // double (*pg)[NG] = p;
     FILE *fo;
     char fname[128];
-    sprintf(fname, "UVP_Re%d_t%d.n.csv", int(Re), int(ter));
+    sprintf(fname, "UVP_Re%d_t%d.cc.csv", int(Re), int(ter));
     fo = fopen(fname, "w+t");
 
     if ( fo == NULL ) {
@@ -394,7 +401,7 @@ void o2f(void) {
 
 int main(int argc, char ** argv) {
     if (argc < 3) {
-        printf("ns2dn Re time\n");
+        printf("ns2d Re time\n");
         return 0;
     }
     Re = strtod(argv[1], NULL);

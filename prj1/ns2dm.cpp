@@ -132,13 +132,13 @@ void init(void) {
 }
 
 void bcu(void) {
-    for (int j = 0; j < UY; j ++) {
-        u[0][j] = 0;
-        u[UX - 1][j] = 0;
-    }
     for (int i = 1; i < UX - 1; i ++) {
         u[i][0] = - u[i][1];
         u[i][UY - 1] = 2.0 - u[i][UY - 2];
+    }
+    for (int j = 0; j < UY; j ++) {
+        u[0][j] = 0;
+        u[UX - 1][j] = 0;
     }
 }
 
@@ -408,7 +408,7 @@ int main(int argc, char ** argv) {
     }
     Re = strtod(argv[1], NULL);
     ter = strtod(argv[2], NULL);
-    dt = min(cfl * dd / (sqrt(2.0)), Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
+    dt = min(cfl * dd / 2.0, Re * dx * dx * dy * dy / (2 * (dx * dx + dy * dy)));
     printf("Re = %lf, T = %lf, dt = %lf\n", Re, ter, dt);
 
     char fname[128];
