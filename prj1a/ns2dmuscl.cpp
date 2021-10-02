@@ -76,14 +76,15 @@ double interpolM(double a, double b, double c) {
     return b + eps * ((1 - ka) * DM + (1 + ka) * DP) / 4.0;
 }
 
-// numerical flux: f~ = 1/2 * ((f+ + f-) - |u@face|(φ+ - φ-))
+// numerical flux at cell face: φA φB | φC φD
+// f~ = 1/2 * ((f+ + f-) - |u@face| * (φ+ - φ-))
 // f+- = u@face * φ+-
 double flux(double a, double b, double c, double d, double uf) {
     double phiP = interpolP(b, c, d);
     double phiM = interpolM(a, b, c);
     double flxP = uf * phiP;
     double flxM = uf * phiM;
-    return (flxP + flxM - abs(velf) * (phiP - phiM)) / 2.0;
+    return (flxP + flxM - abs(uf) * (phiP - phiM)) / 2.0;
 }
 
 int main(int argc, char ** argv) {
