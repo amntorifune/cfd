@@ -87,6 +87,84 @@ double flux(double a, double b, double c, double d, double uf) {
     return (flxP + flxM - abs(uf) * (phiP - phiM)) / 2.0;
 }
 
+// du/dt + duu/dx + dvu/dy = 1/Re * (ddu/dxx + ddu/dyy)
+// dv/dt + duv/dx + dvv/dy = 1/Re * (ddv/dxx + ddv/dyy)
+//     fn
+// fw cell fe
+//     fs
+void fs1(void) {
+    double a, b, c, d, Uf;
+    for (int i = 1; i < NN - 1; i ++) {
+        for (int j = 1; j < NN - 1; j ++) {
+            // fw~ = (uu)w~
+            //    = 1/2 * ((uu)w+ + (uu)w- - |uw| * (uw+ - uw-))
+            //    = f~(ui-2, ui-1, ui, ui+1, uw)
+            // (uu)w+- = fw+- = uw * uw+-
+            // uw = u@wface = (ui-1 + ui) / 2
+            // uw+ = u+(ui-1, ui, ui+1), uw- = u-(ui-2, ui-1, ui)
+            double fw = 0.0;
+            if (i > 1) {
+                a = u[i - 2][j];
+                b = u[i - 1][j];
+                c = u[i][j];
+                d = u[i + 1][j];
+                Uf = (u[i - 1][j] + u[i][j]) / 2.0;
+                fw = flux(a, b, c, d, Uf);
+            }
+            // fe~ = (uu)e~
+            //    = 1/2 * ((uu)e+ + (uu)e- - |ue| * (ue+ - ue-))
+            //    = f~(ui-1, ui, ui+1, ui+2, ue)
+            // (uu)e+- = fe+- = ue * ue+-
+            // ue = u@eface = (ui + ui+1) / 2
+            // ue+ = u+(ui, ui+1, ui+2), ue- = u-(ui-1, ui, ui+1)
+            double fe = 0.0;
+            if (i < NN - 2) {
+                a = u[i - 1][j];
+                b = u[i][j];
+                c = u[i + 1][j];
+                d = u[i + 2][j];
+                Uf = (u[i][j] + u[i + 1][j]) / 2.0;
+                fe = flux(a, b, c, d, Uf);
+            }
+            // fs~ = (vu)s~
+            //    = 1/2 * ((vu)s+ + (vu)s- - |vs| * (us+ - us-))
+            //    = f~(uj-2, uj-1, uj, uj+1, vs)
+            // (vu)s+- = fs+- = vs * us+-
+            // vs = v@sface = (vj-1 + vj) / 2
+            // us+ = u+(uj-1, uj, uj+1), us- = u-(uj-2, uj-1, uj)
+            double fs = 0.0;
+            if (j > 1) {
+                a = u[i][j - 2];
+                b = u[i][j - 1];
+                c = u[i][j];
+                d = u[i][j + 1];
+                Uf = (v[i][j - 1] + v[i][j]) / 2.0;
+                fs = flux(a, b, c, d, Uf);
+            }
+            // fn~ = (vu)n~
+            //    = 1/2 * ((vu)n+ + (vu)n- - |vn| * (un+ - un-))
+            //    = f~(uj-1, uj, uj+1, uj+2, vn)
+            // (vu)n+- = fn+- = vn * un+-
+            // vn = v@nface = (vj + vj+1) / 2
+            // un+ = u+(uj, uj+1, uj+2), un- = u-(uj-1, uj, uj+1)
+            double fn = 0.0;
+            if (j < NN - 2) {
+                a = u[i][j - 1];
+                b = u[i][j];
+                c = u[i][j + 1];
+                d = u[i][j + 2];
+                Uf = (v[i][j] + v[i][j + 1]) / 2.0;
+                fn = flux(a, b, c, d, Uf);
+            }
+            double duudx = (fe - fw) / dd;
+            double dvudy = (fn - fs) / dd;
+            double ddudxx = (u[i - 1][j] - 2 * u[i][j] + u[i + 1][j]) / (dd * dd);
+            double ddudyy = (u[i][j - 1] - 2 * u[i][j] + u[i][j + 1]) / (dd * dd);
+            ut[i][j] = u[i][j] + dt * (- duudx - dvudy + (ddudxx + ddudyy) / Re);
+        }
+    }
+}
+
 int main(int argc, char ** argv) {
     return 0;
 }
