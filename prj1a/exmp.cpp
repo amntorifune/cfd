@@ -266,7 +266,7 @@ void fs1(void) {
             double dvvdy = (fn - fs) / dd;
             double ddvdxx = (v[i - 1][j] - 2 * v[i][j] + v[i + 1][j]) / (dd * dd);
             double ddvdyy = (v[i][j - 1] - 2 * v[i][j] + v[i][j + 1]) / (dd * dd);
-            vt[i][j] = u[i][j] + dt * (- duvdx - dvvdy + (ddvdxx + ddvdyy) / Re);
+            vt[i][j] = v[i][j] + dt * (- duvdx - dvvdy + (ddvdxx + ddvdyy) / Re);
         }
     }
 }
