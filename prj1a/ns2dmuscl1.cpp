@@ -72,13 +72,12 @@ void calcdiv(void) {
 }
 
 int sgn(double x) {
-    if (x > 0) {
+    if (x >= 0) {
         return 1;
     }
-    if (x < 0) {
+    else {
         return -1;
     }
-    return 0;
 }
 
 double minmod(double x, double y) {
