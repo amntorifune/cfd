@@ -19,7 +19,7 @@ const int SWBOUND = GHST;
 const int NEBOUND = SWBOUND + NC;
 const int NG = NC + 1;
 
-// bouncary values
+// bounary values
 const double UBCe  = 0;
 const double UBCw  = 0;
 const double UBCn  = 1;
