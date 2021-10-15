@@ -128,11 +128,11 @@ void applyBCP(double p[NN][NN]) {
 
 // interpolate cell face values from cell center values
 void calcUF(double u[NN][NN][2], double uF[NN][NN][2]) {
-    double ue, uc, uw, vn, vc, vs; // velocity at each direction
-    double ufe, ufw, vfn, vfs;     // velocity at cell faces
     #pragma omp parallel for
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         for (int k = SWBOUND; k < NEBOUND; k ++) {
+            double ue, uc, uw, vn, vc, vs; // velocity at each direction
+            double ufe, ufw, vfn, vfs;     // velocity at cell faces
             ue  = u[i + 1][k    ][u_];
             uc  = u[i    ][k    ][u_];
             uw  = u[i - 1][k    ][u_];
@@ -374,7 +374,7 @@ double fs2(double u[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], dou
             double pe, pw, pc, pn, ps;             // pressure potential at each direction
             double dpdxfe, dpdxfw, dpdyfn, dpdyfs; // pressure gradient at cell faces
             double dpdxcc, dpdycc;                 // pressure gradient at cell center
-            double ucc, vcc;                         // velocity at cell center
+            double ucc, vcc;                       // velocity at cell center
             double ufe, ufw, vfn, vfs;             // velocity at cell faces
             ucc    =   u[i    ][k    ][u_];
             vcc    =   u[i    ][k    ][v_];
