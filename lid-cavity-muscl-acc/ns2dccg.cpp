@@ -63,7 +63,7 @@ double P[NN][NN], PN[NN][NN], PG[NG][NG];
 
 double calcdiv(double uF[NN][NN][2]) {
     double tdiver = 0;
-    #pragma omp parallel for reduction(+:tdiver)
+    #pragma acc kernels loop independent reduction(+:tdiver) collapse(2) present(uF) copy(tdiver)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         for (int k = SWBOUND; k < NEBOUND; k ++) {
             double ufe, ufw, vfn, vfs; // velocity at each direction
@@ -84,14 +84,14 @@ double calcdiv(double uF[NN][NN][2]) {
 
 // apply boundary conditions to velocity at cell center
 void applyBCU(double u[NN][NN][2]) {
-    #pragma omp parallel for
+    #pragma acc kernels loop present(u)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         u[i][SWBOUND - 1][u_] = 2 * UBCs - u[i][SWBOUND    ][u_];
         u[i][NEBOUND    ][u_] = 2 * UBCn - u[i][NEBOUND - 1][u_];
         u[i][SWBOUND - 1][v_] = 2 * VBCs - u[i][SWBOUND    ][v_];
         u[i][NEBOUND    ][v_] = 2 * VBCn - u[i][NEBOUND - 1][v_];
     }
-    #pragma omp parallel for
+    #pragma acc kernels loop present(u)
     for (int k = SWBOUND; k < NEBOUND; k ++) {
         u[SWBOUND - 1][k][u_] = 2 * UBCw - u[SWBOUND    ][k][u_];
         u[NEBOUND    ][k][u_] = 2 * UBCe - u[NEBOUND - 1][k][u_];
@@ -101,12 +101,12 @@ void applyBCU(double u[NN][NN][2]) {
 }
 // apply boundary conditions to velocity at cell faces
 void applyBCUF(double uF[NN][NN][2]) {
-    #pragma omp parallel for
+    #pragma acc kernels loop present(uF)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         uF[i][SWBOUND - 1][v_] = VBCs;
         uF[i][NEBOUND - 1][v_] = VBCn;
     }
-    #pragma omp parallel for
+    #pragma acc kernels loop present(uF)
     for (int k = SWBOUND; k < NEBOUND; k ++) {
         uF[SWBOUND - 1][k][u_] = UBCw;
         uF[NEBOUND - 1][k][u_] = UBCe;
@@ -114,12 +114,12 @@ void applyBCUF(double uF[NN][NN][2]) {
 }
 // apply boundary conditions to pressure potential
 void applyBCP(double p[NN][NN]) {
-    #pragma omp parallel for
+    #pragma acc kernels loop present(p)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         p[i][NEBOUND    ] = p[i][NEBOUND - 1] + DPBCn * dd;
         p[i][SWBOUND - 1] = p[i][SWBOUND    ] - DPBCs * dd;
     }
-    #pragma omp parallel for
+    #pragma acc kernels loop present(p)
     for (int k = SWBOUND; k < NEBOUND; k ++) {
         p[NEBOUND    ][k] = p[NEBOUND - 1][k] + DPBCe * dd;
         p[SWBOUND - 1][k] = p[SWBOUND    ][k] - DPBCw * dd;
@@ -128,7 +128,7 @@ void applyBCP(double p[NN][NN]) {
 
 // interpolate cell face values from cell center values
 void calcUF(double u[NN][NN][2], double uF[NN][NN][2]) {
-    #pragma omp parallel for
+    #pragma acc kernels loop independent collapse(2) present(u, uF)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         for (int k = SWBOUND; k < NEBOUND; k ++) {
             double ue, uc, uw, vn, vc, vs; // velocity at each direction
@@ -184,7 +184,7 @@ void init(double u[NN][NN][2], double uF[NN][NN][2], double p[NN][NN]) {
 
 // copy U to UN or UF to UFN
 void cpUUF(double u[NN][NN][2], double uN[NN][NN][2]) {
-    #pragma omp parallel for
+    #pragma acc kernels loop independent collapse(2) present(u, uN)
     for (int i = 0; i < NN; i ++) {
         for (int k = 0; k < NN; k ++) {
             uN[i][k][u_] = u[i][k][u_];
@@ -194,7 +194,7 @@ void cpUUF(double u[NN][NN][2], double uN[NN][NN][2]) {
 }
 // copy P to PN
 void cpP(double p[NN][NN], double pN[NN][NN]) {
-    #pragma omp parallel for
+    #pragma acc kernels loop independent collapse(2) present(p, pN)
     for (int i = 0; i < NN; i ++) {
         for (int k = 0; k < NN; k ++) {
             pN[i][k] = p[i][k];
@@ -250,7 +250,7 @@ double flux(double a, double b, double c, double d, double uf) {
 
 void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2]) {
     cpUUF(u, uN);
-    #pragma omp parallel for
+    #pragma acc kernels loop independent collapse(2) present(u, uN, uF)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         for (int k = SWBOUND; k < NEBOUND; k ++) {
             double fue, fuw, fun, fus, fve, fvw, fvn, fvs;      // flux variables
@@ -323,7 +323,7 @@ int poisson(double p[NN][NN], double pN[NN][NN], double uF[NN][NN][2]) {
         R   = 0;
         con = true;
         cpP(p, pN);
-        #pragma omp parallel for reduction(+:R)
+        #pragma acc kernels loop independent reduction(+:R) collapse(2) present(p, pN, uF) copy(R)
         for (int i = SWBOUND; i < NEBOUND; i ++) {
             for (int k = SWBOUND; k < NEBOUND; k ++) {
                 double ufe, ufw, vfn, vfs; // velocity at cell faces
@@ -368,7 +368,7 @@ int poisson(double p[NN][NN], double pN[NN][NN], double uF[NN][NN][2]) {
 
 double fs2(double u[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], double p[NN][NN]) {
     cpUUF(uF, uFN);
-    #pragma omp parallel for
+    #pragma acc kernels loop independent collapse(2) present(u, uF, uFN, p)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         for (int k = SWBOUND; k < NEBOUND; k ++) {
             double pe, pw, pc, pn, ps;             // pressure potential at each direction
@@ -493,7 +493,7 @@ void o2f(double uG[NG][NG][2], double pG[NG][NG]) {
     FILE *fo;
     char fname[128];
     double xpos, ypos;
-    sprintf(fname, "UVP_Re%d_t%d.ns2dcc8.4.csv", int(Re), int(ter));
+    sprintf(fname, "UVP_Re%d.ns2dccg.csv", int(Re), int(ter));
     fo = fopen(fname, "w+t");
 
     if ( fo == NULL ) {
@@ -522,8 +522,10 @@ int main(int argc, char ** argv) {
     dt = min(CFL * dd * 0.5, 0.5 * Re * dd * dd * dd * dd / (2 * (dd * dd + dd * dd)));
     printf("Re = %lf, T = %lf, dt = %lf, dtau = %lf\n", Re, ter, dt, dtau);
 
+    #pragma acc enter data copyin(U, UN, UF, UFN, P, PN)
     init(U, UF, P);
     ns2d(U, UN, UF, UFN, P, PN);
+    #pragma acc exit data copyout(U, UF, P)
     calcgrid(U, UG, P, PG);
     o2f(UG, PG);
 
