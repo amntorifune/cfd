@@ -1,19 +1,67 @@
 #!/usr/bin/bash
 
-echo running ns2dccg Re=100 T=15 ...
-./ns2dccg 100 15
-echo running ns2dccg Re=400 T=25 ...
-./ns2dccg 400 25
-echo running ns2dccg Re=1000 T=25 ...
-./ns2dccg 1000 25
-echo running ns2dccg Re=3200 T=50 ...
-./ns2dccg 3200 50
+function run128() {
+    Re=$1
+    T=100
+    if [[ $Re -le 100 ]]; then
+        T=15
+    elif [[ $Re -le 1000 ]]; then
+        T=25
+    elif [[ $Re -le 5000 ]]; then
+        T=50
+    elif [[ $Re -le 7500 ]]; then
+        T=75
+    fi
+    echo "running ns2dccg Re=$Re T=$T ..."
+    ./ns2dccg $Re $T
+}
 
-echo running ns2dccg256 Re=3200 T=50 ...
-./ns2dccg256 3200 50
-echo running ns2dccg256 Re=5000 T=50 ...
-./ns2dccg256 5000 50
-echo running ns2dccg256 Re=7500 T=75 ...
-./ns2dccg256 7500 75
-echo running ns2dccg256 Re=10000 T=100 ...
-./ns2dccg256 10000 100
+function run256() {
+    Re=$1
+    T=100
+    if [[ $Re -le 100 ]]; then
+        T=15
+    elif [[ $Re -le 1000 ]]; then
+        T=25
+    elif [[ $Re -le 5000 ]]; then
+        T=50
+    elif [[ $Re -le 7500 ]]; then
+        T=75
+    fi
+    echo "running ns2dccg256 Re=$Re T=$T ..."
+    ./ns2dccg256 $Re $T
+}
+
+if [[ $# -lt 1 ]]; then
+    echo "all Res: 100,400,1000,3200 on 128x128 and 3200,5000,7500,10000 on 256x256"
+    run128 100
+    run128 400
+    run128 1000
+    run128 3200
+    run256 3200
+    run256 5000
+    run256 7500
+    run256 10000
+elif [[ $1 == h ]]; then
+    echo "high Res: 3200,5000,7500,10000 on 256x256"
+    run256 3200
+    run256 5000
+    run256 7500
+    run256 10000
+elif [[ $1 == l ]]; then
+    echo "low Res: 100,400,1000,3200 on 128x128"
+    run128 100
+    run128 400
+    run128 1000
+    run128 3200
+elif [[ $1 -lt 3000 ]]; then
+    echo "low resolution: 128x128"
+    run128 $1
+elif [[ $1 -lt 5000 ]]; then
+    echo "both resolutions: 128x128, 256x256"
+    run128 $1
+    run256 $1
+else
+    echo "high resolution: 256x256"
+    run256 $1
+fi
