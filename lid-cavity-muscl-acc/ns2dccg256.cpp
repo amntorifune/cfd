@@ -161,12 +161,14 @@ void bE(int i, int k, int &ee, int &ew, int &en, int &es) {
 
 // initialize velocity and pressure
 void init(double u[NN][NN][2], double uF[NN][NN][2], double p[NN][NN]) {
+    #pragma acc kernels loop collapse(2) present(u)
     for (int i = 0; i < NN; i ++) {
         for (int k = 0; k < NN; k ++) {
             u[i][k][u_] = 0;
             u[i][k][v_] = 0;
         }
     }
+    #pragma acc kernels loop present(u)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         u[i][NEBOUND - 1][u_] = UBCn;
     }
@@ -174,6 +176,7 @@ void init(double u[NN][NN][2], double uF[NN][NN][2], double p[NN][NN]) {
     calcUF(u, uF);
     applyBCUF(uF);
 
+    #pragma acc kernels loop collapse(2) present(uF)
     for (int i = 0; i < NN; i ++) {
         for (int k = 0; k < NN; k ++) {
             p[i][k] = 0;
@@ -183,12 +186,12 @@ void init(double u[NN][NN][2], double uF[NN][NN][2], double p[NN][NN]) {
 }
 
 // copy U to UN or UF to UFN
-void cpUUF(double u[NN][NN][2], double uN[NN][NN][2]) {
-    #pragma acc kernels loop independent collapse(2) present(u, uN)
+void cpUUF(double ut[NN][NN][2], double utN[NN][NN][2]) {
+    #pragma acc kernels loop independent collapse(2) present(ut, utN)
     for (int i = 0; i < NN; i ++) {
         for (int k = 0; k < NN; k ++) {
-            uN[i][k][u_] = u[i][k][u_];
-            uN[i][k][v_] = u[i][k][v_];
+            utN[i][k][u_] = ut[i][k][u_];
+            utN[i][k][v_] = ut[i][k][v_];
         }
     }
 }
@@ -314,7 +317,7 @@ void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2]) {
 }
 
 int poisson(double p[NN][NN], double pN[NN][NN], double uF[NN][NN][2]) {
-    double E  = 2.5E-5;
+    double E  = 1E-5;
     int MAXIT = 100;
     bool con  = false;
     int it    = 0;
