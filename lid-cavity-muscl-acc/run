@@ -3,14 +3,8 @@
 function run128() {
     Re=$1
     T=100
-    if [[ $Re -le 100 ]]; then
-        T=15
-    elif [[ $Re -le 1000 ]]; then
-        T=25
-    elif [[ $Re -le 5000 ]]; then
+    if [[ $Re -le 1000 ]]; then
         T=50
-    elif [[ $Re -le 7500 ]]; then
-        T=75
     fi
     echo "running ns2dccg Re=$Re T=$T ..."
     ./ns2dccg $Re $T
@@ -19,14 +13,8 @@ function run128() {
 function run256() {
     Re=$1
     T=100
-    if [[ $Re -le 100 ]]; then
-        T=15
-    elif [[ $Re -le 1000 ]]; then
-        T=25
-    elif [[ $Re -le 5000 ]]; then
+    if [[ $Re -le 1000 ]]; then
         T=50
-    elif [[ $Re -le 7500 ]]; then
-        T=75
     fi
     echo "running ns2dccg256 Re=$Re T=$T ..."
     ./ns2dccg256 $Re $T
