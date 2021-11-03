@@ -420,7 +420,7 @@ double fs2(double u[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], dou
 
 void ns2d(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], double p[NN][NN], double pN[NN][NN]) {
     double t        = 0;
-    double E        = 5E-2;
+    double E        = 1E-1;
     double diver    = calcdiv(uF);
     double maxdiver = 0;
     int it;
