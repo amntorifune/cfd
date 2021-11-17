@@ -176,7 +176,7 @@ void init(double u[NN][NN][2], double uF[NN][NN][2], double p[NN][NN]) {
     calcUF(u, uF);
     applyBCUF(uF);
 
-    #pragma acc kernels loop collapse(2) present(uF)
+    #pragma acc kernels loop collapse(2) present(p)
     for (int i = 0; i < NN; i ++) {
         for (int k = 0; k < NN; k ++) {
             p[i][k] = 0;

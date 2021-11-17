@@ -176,7 +176,7 @@ void init(double u[NN][NN][2], double uF[NN][NN][2], double p[NN][NN]) {
     calcUF(u, uF);
     applyBCUF(uF);
 
-    #pragma acc kernels loop collapse(2) present(uF)
+    #pragma acc kernels loop collapse(2) present(p)
     for (int i = 0; i < NN; i ++) {
         for (int k = 0; k < NN; k ++) {
             p[i][k] = 0;
@@ -262,7 +262,7 @@ void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2]) {
             double ufe, ufw, vfn, vfs;                          // velocity at cell faces
             double duudx, dvudy, duvdx, dvvdy;                  // 1st derivatives
             double ddudxx, ddudyy, ddvdxx, ddvdyy;              // 2nd derivatives
-            int ee, ew, en, es;                              // boundary indicators
+            int ee, ew, en, es;                                 // boundary indicators
             bE(i, k, ee, ew, en, es);
             uw2    = uN[i - 2][k    ][u_];
             uw1    = uN[i - 1][k    ][u_];
