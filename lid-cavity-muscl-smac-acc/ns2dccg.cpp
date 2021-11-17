@@ -280,7 +280,7 @@ double flux(double a, double b, double c, double d, double uf) {
 // u* = u + Δt * (Convection + Viscoucity - grad(Pressure))
 void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double pr[NN][NN]) {
     cpUUF(u, uN);
-    #pragma acc kernels loop independent collapse(2) present(u, uN, uF)
+    #pragma acc kernels loop independent collapse(2) present(u, uN, uF, pr)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
         for (int k = SWBOUND; k < NEBOUND; k ++) {
             double fue, fuw, fun, fus, fve, fvw, fvn, fvs;      // flux variables
@@ -479,7 +479,7 @@ void updatePr(double p[NN][NN], double pr[NN][NN]) {
 
 void ns2d(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], double p[NN][NN], double pN[NN][NN], double pr[NN][NN]) {
     double t        = 0;
-    double E        = 1E-3;
+    double E        = 2.5E-3;
     double diver    = calcdiv(uF);
     double maxdiver = 0;
     int it;
