@@ -277,7 +277,7 @@ double flux(double a, double b, double c, double d, double uf) {
     return 0.5 * (flxP + flxM - abs(uf) * (phiP - phiM));
 }
 
-// uP = uN + Δt * (Convection + Viscoucity - grad(Pressure))
+// u* = u + Δt * (Convection + Viscoucity - grad(Pressure))
 void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double pr[NN][NN]) {
     cpUUF(u, uN);
     #pragma acc kernels loop independent collapse(2) present(u, uN, uF)
@@ -361,7 +361,7 @@ void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double
     applyBCUF(uF);
 }
 
-// div(grad(p)) = div(uP) / Δt
+// div(grad(p)) = div(u*) / Δt
 // p is the pressure potential, which is different from pressure Pr
 int poisson(double p[NN][NN], double pN[NN][NN], double uF[NN][NN][2]) {
     double E  = 1E-5;
@@ -416,7 +416,7 @@ int poisson(double p[NN][NN], double pN[NN][NN], double uF[NN][NN][2]) {
     return it;
 }
 
-// uN+1 = uP - Δt * grad(p)
+// u = u* - Δt * grad(p)
 double fs2(double u[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], double p[NN][NN]) {
     cpUUF(uF, uFN);
     #pragma acc kernels loop independent collapse(2) present(u, uF, uFN, p)
@@ -466,7 +466,7 @@ double fs2(double u[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], dou
     return calcdiv(uF);
 }
 
-// Pr += p
+// Pr = Pr + p
 void updatePr(double p[NN][NN], double pr[NN][NN]) {
     #pragma acc kernels loop independent collapse(2) present(p, pr)
     for (int i = SWBOUND; i < NEBOUND; i ++) {
@@ -479,7 +479,7 @@ void updatePr(double p[NN][NN], double pr[NN][NN]) {
 
 void ns2d(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], double p[NN][NN], double pN[NN][NN], double pr[NN][NN]) {
     double t        = 0;
-    double E        = 5E-3;
+    double E        = 1E-3;
     double diver    = calcdiv(uF);
     double maxdiver = 0;
     int it;
