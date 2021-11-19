@@ -277,7 +277,7 @@ double flux(double a, double b, double c, double d, double uf) {
     return 0.5 * (flxP + flxM - abs(uf) * (phiP - phiM));
 }
 
-// u* = u + Δt * (Convection + Viscoucity - grad(Pressure))
+// u* = u + Δt * (- Convection + Viscoucity - grad(Pressure))
 void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double pr[NN][NN]) {
     cpUUF(u, uN);
     #pragma acc kernels loop independent collapse(2) present(u, uN, uF, pr)
