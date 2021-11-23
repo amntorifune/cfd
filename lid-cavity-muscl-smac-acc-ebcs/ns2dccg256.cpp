@@ -274,10 +274,10 @@ void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double
             vfs     = (es1)? uF[i    ][k - 1][v_] : VBCs;
 
             prc     = pr[i    ][k    ];
-            pre     = (ee1)? pr[i + 1][k    ] : (prc + DPBCe * dd);
-            prw     = (ew1)? pr[i - 1][k    ] : (prc - DPBCw * dd);
-            prn     = (en1)? pr[i    ][k + 1] : (prc + DPBCn * dd);
-            prs     = (es1)? pr[i    ][k - 1] : (prc - DPBCs * dd);
+            pre     = pr[i + 1][k    ];
+            prw     = pr[i - 1][k    ];
+            prn     = pr[i    ][k + 1];
+            prs     = pr[i    ][k - 1];
 
             fue     = (ee1)? flux(uw1, uc0, ue1, ue2, ufe) : FUBCe;
             fuw     = (ew1)? flux(uw2, uw1, uc0, ue1, ufw) : FUBCw;
@@ -297,10 +297,10 @@ void fs1(double u[NN][NN][2], double uN[NN][NN][2], double uF[NN][NN][2], double
             ddvdxx  = (vw1 - 2 * vc0 + ve1) / (dd * dd);
             ddvdyy  = (vs1 - 2 * vc0 + vn1) / (dd * dd);
 
-            dprdxfe = (pre - prc) / dd;
-            dprdxfw = (prc - prw) / dd;
-            dprdyfn = (prn - prc) / dd;
-            dprdyfs = (prc - prs) / dd;
+            dprdxfe = (ee1)? (pre - prc) / dd : DPBCe;
+            dprdxfw = (ew1)? (prc - prw) / dd : DPBCw;
+            dprdyfn = (en1)? (prn - prc) / dd : DPBCn;
+            dprdyfs = (es1)? (prc - prs) / dd : DPBCs;
             dprdxcc = (dprdxfe + dprdxfw) * 0.5;
             dprdycc = (dprdyfn + dprdyfs) * 0.5;
 
@@ -329,13 +329,14 @@ int poisson(double p[NN][NN], double pN[NN][NN], double uF[NN][NN][2]) {
         #pragma acc kernels loop independent reduction(+:R) collapse(2) present(p, pN, uF) copy(R)
         for (int i = SWBOUND; i < NEBOUND; i ++) {
             for (int k = SWBOUND; k < NEBOUND; k ++) {
-                double ufe, ufw, vfn, vfs; // velocity at cell faces
-                double pe, pw, pc, pn, ps; // pressure potential at each direction
-                double dudx, dvdy;         // velocity gradient at cell center
-                double ddpdxx, ddpdyy;     // 2nd derivatives at cell center
+                double ufe, ufw, vfn, vfs;             // velocity at cell faces
+                double pe, pw, pc, pn, ps;             // pressure potential at each direction
+                double dudx, dvdy;                     // velocity gradient at cell center
+                double dpdxfe, dpdxfw, dpdyfn, dpdyfs; // 1st derivatives at cell faces
+                double ddpdxx, ddpdyy;                 // 2nd derivatives at cell center
                 double psi, res;
-                int    ee1, ew1, en1, es1; // first level boundary indicator
-                int    ee2, ew2, en2, es2; // second level boundary indicator
+                int    ee1, ew1, en1, es1;             // first level boundary indicator
+                int    ee2, ew2, en2, es2;             // second level boundary indicator
                 bE(i, k, ee1, ew1, en1, es1, ee2, ew2, en2, es2);
 
                 ufe     = (ee1)? uF[i    ][k    ][u_] : UBCe;
@@ -344,15 +345,20 @@ int poisson(double p[NN][NN], double pN[NN][NN], double uF[NN][NN][2]) {
                 vfs     = (es1)? uF[i    ][k - 1][v_] : VBCs;
 
                 pc      = pN[i    ][k    ];
-                pe      = (ee1)? pN[i + 1][k    ] : (pc + DPBCe * dd);
-                pw      = (ew1)? pN[i - 1][k    ] : (pc - DPBCw * dd);
-                pn      = (en1)? pN[i    ][k + 1] : (pc + DPBCn * dd);
-                ps      = (es1)? pN[i    ][k - 1] : (pc - DPBCs * dd);
+                pe      = pN[i + 1][k    ];
+                pw      = pN[i - 1][k    ];
+                pn      = pN[i    ][k + 1];
+                ps      = pN[i    ][k - 1];
 
                 dudx    = (ufe - ufw) / (dd);
                 dvdy    = (vfn - vfs) / (dd);
-                ddpdxx  = (pw - 2 * pc + pe) / (dd * dd);
-                ddpdyy  = (ps - 2 * pc + pn) / (dd * dd);
+
+                dpdxfe  = (ee1)? (pe - pc) / dd : DPBCe;
+                dpdxfw  = (ew1)? (pc - pw) / dd : DPBCw;
+                dpdyfn  = (en1)? (pn - pc) / dd : DPBCn;
+                dpdyfs  = (es1)? (pc - ps) / dd : DPBCs;
+                ddpdxx  = (dpdxfe - dpdxfw) / dd;
+                ddpdyy  = (dpdyfn - dpdyfs) / dd;
                 psi     = (dudx + dvdy) / dt;
                 res     = dtau * (ddpdxx + ddpdyy - psi);
 
@@ -396,15 +402,15 @@ double fs2(double u[NN][NN][2], double uF[NN][NN][2], double uFN[NN][NN][2], dou
             vfs    = (es1)? uFN[i    ][k - 1][v_] : VBCs;
 
             pc     = p[i    ][k    ];
-            pe     = (ee1)? p[i + 1][k    ] : (pc + DPBCe * dd);
-            pw     = (ew1)? p[i - 1][k    ] : (pc - DPBCw * dd);
-            pn     = (en1)? p[i    ][k + 1] : (pc + DPBCn * dd);
-            ps     = (es1)? p[i    ][k - 1] : (pc - DPBCs * dd);
+            pe     = p[i + 1][k    ];
+            pw     = p[i - 1][k    ];
+            pn     = p[i    ][k + 1];
+            ps     = p[i    ][k - 1];
 
-            dpdxfe = (pe - pc) / dd;
-            dpdxfw = (pc - pw) / dd;
-            dpdyfn = (pn - pc) / dd;
-            dpdyfs = (pc - ps) / dd;
+            dpdxfe  = (ee1)? (pe - pc) / dd : DPBCe;
+            dpdxfw  = (ew1)? (pc - pw) / dd : DPBCw;
+            dpdyfn  = (en1)? (pn - pc) / dd : DPBCn;
+            dpdyfs  = (es1)? (pc - ps) / dd : DPBCs;
             dpdxcc = 0.5 * (dpdxfe + dpdxfw);
             dpdycc = 0.5 * (dpdyfn + dpdyfs);
 
