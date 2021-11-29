@@ -338,37 +338,37 @@ double minmod(double x, double y) {
     return sgn(x) * max(0.0, min(abs(x), sgn(x) * y));
 }
 
-// interpolated value φ+ at cell face: φA φB | φC φD
-// φ+ = φC - ε/4 * ((1 - κ) * Δ+ + (1 + κ) * Δ-)
+// interpolated value φR at cell face: φl2 φl1 | φr1 φr2
+// φR = φr1 - ε/4 * ((1 - κ) * Δ+ + (1 + κ) * Δ-)
 // Δ+ = minmod(d+, β * d-), Δ- = minmod(d-, β * d+)
-// d+ = φD - φC, d- = φC - φB
-double interpolP(double b, double c, double d) {
-    double dP = d - c;
-    double dM = c - b;
+// d+ = φr2 - φr1, d- = φr1 - φl1
+double interpolR(double l1, double r1, double r2) {
+    double dP = r2 - r1;
+    double dM = r1 - l1;
     double DP = minmod(dP, BETA * dM);
     double DM = minmod(dM, BETA * dP);
-    return (c - EPSILON * 0.25 * ((1 - KAPPA) * DP + (1 + KAPPA) * DM));
+    return r1 - EPSILON * 0.25 * ((1 - KAPPA) * DP + (1 + KAPPA) * DM);
 }
-// interpolated value φ- at cell face: φA φB | φC φD
-// φ- = φB + ε/4 * ((1 - κ) * Δ- + (1 + κ) * Δ+)
+// interpolated value φL at cell face: φl2 φl1 | φr1 φr2
+// φL = φl1 + ε/4 * ((1 - κ) * Δ- + (1 + κ) * Δ+)
 // Δ+ = minmod(d+, β * d-), Δ- = minmod(d-, β * d+)
-// d+ = φC - φB, d- = φB - φA
-double interpolM(double a, double b, double c) {
-    double dP = c - b;
-    double dM = b - a;
+// d+ = φr1 - φl1, d- = φl1 - φl2
+double interpolL(double l2, double l1, double r1) {
+    double dP = r1 - l1;
+    double dM = l1 - l2;
     double DP = minmod(dP, BETA * dM);
     double DM = minmod(dM, BETA * dP);
-    return (b + EPSILON * 0.25 * ((1 - KAPPA) * DM + (1 + KAPPA) * DP));
+    return l1 + EPSILON * 0.25 * ((1 - KAPPA) * DM + (1 + KAPPA) * DP);
 }
-// numerical flux at cell face: φA φB | φC φD
-// f~ = 1/2 * ((f+ + f-) - |u@face| * (φ+ - φ-))
-// f+- = u@face * φ+-
-double flux(double a, double b, double c, double d, double uf) {
-    double phiP = interpolP(b, c, d);
-    double phiM = interpolM(a, b, c);
-    double flxP = uf * phiP;
-    double flxM = uf * phiM;
-    return 0.5 * (flxP + flxM - abs(uf) * (phiP - phiM));
+// numerical flux at cell face: φl2 φl1 | φr1 φr2
+// f~ = 1/2 * ((fR + fL) - |u@face| * (φR - φL))
+// fRL = u@face * φRL
+double flux(double l2, double l1, double r1, double r2, double uf) {
+    double phfR = interpolR(l1, r1, r2);
+    double phfL = interpolL(l2, l1, r1);
+    double flxR = uf * phfR;
+    double flxL = uf * phfL;
+    return 0.5 * (flxR + flxL - abs(uf) * (phfR - phfL));
 }
 
 // u* = u + Δt * (- Convection + Viscoucity - grad(P))
