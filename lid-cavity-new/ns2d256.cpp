@@ -32,7 +32,8 @@ const double dtau  = 1.0 / B0;
 const double CFL   = 1.0;
 
 // solver parameters
-const int EPSILON  = 1;
+const int EPSILON3 = 1;
+const int EPSILON1 = 0;
 const double KAPPA = 1.0 / 3.0;
 const double BETA  = (3 - KAPPA) / (1 - KAPPA);
 
@@ -342,30 +343,30 @@ double minmod(double x, double y) {
 // φR = φr1 - ε/4 * ((1 - κ) * Δ+ + (1 + κ) * Δ-)
 // Δ+ = minmod(d+, β * d-), Δ- = minmod(d-, β * d+)
 // d+ = φr2 - φr1, d- = φr1 - φl1
-double interpolR(double l1, double r1, double r2) {
+double interpolR(double l1, double r1, double r2, int eps) {
     double dP = r2 - r1;
     double dM = r1 - l1;
     double DP = minmod(dP, BETA * dM);
     double DM = minmod(dM, BETA * dP);
-    return r1 - EPSILON * 0.25 * ((1 - KAPPA) * DP + (1 + KAPPA) * DM);
+    return r1 - eps * 0.25 * ((1 - KAPPA) * DP + (1 + KAPPA) * DM);
 }
 // interpolated value φL at cell face: φl2 φl1 | φr1 φr2
 // φL = φl1 + ε/4 * ((1 - κ) * Δ- + (1 + κ) * Δ+)
 // Δ+ = minmod(d+, β * d-), Δ- = minmod(d-, β * d+)
 // d+ = φr1 - φl1, d- = φl1 - φl2
-double interpolL(double l2, double l1, double r1) {
+double interpolL(double l2, double l1, double r1, int eps) {
     double dP = r1 - l1;
     double dM = l1 - l2;
     double DP = minmod(dP, BETA * dM);
     double DM = minmod(dM, BETA * dP);
-    return l1 + EPSILON * 0.25 * ((1 - KAPPA) * DM + (1 + KAPPA) * DP);
+    return l1 + eps * 0.25 * ((1 - KAPPA) * DM + (1 + KAPPA) * DP);
 }
 // numerical flux at cell face: φl2 φl1 | φr1 φr2
 // f~ = 1/2 * ((fR + fL) - |u@face| * (φR - φL))
 // fRL = u@face * φRL
-double flux(double l2, double l1, double r1, double r2, double uf) {
-    double phfR = interpolR(l1, r1, r2);
-    double phfL = interpolL(l2, l1, r1);
+double flux(double l2, double l1, double r1, double r2, double uf, int epsL, int epsR) {
+    double phfR = interpolR(l1, r1, r2, epsR);
+    double phfL = interpolL(l2, l1, r1, epsL);
     double flxR = uf * phfR;
     double flxL = uf * phfL;
     return 0.5 * (flxR + flxL - abs(uf) * (phfR - phfL));
@@ -389,10 +390,12 @@ void prediction(
                 double duudx, dvudy, duvdx, dvvdy;                  // 1st derivatives
                 double ddudxx, ddudyy, ddvdxx, ddvdyy;              // 2nd derivatives
                 double pe1, pw1, pc0, pn1, ps1;                     // pressure at each direction
-                double dprdxfe, dprdxfw, dprdyfn, dprdyfs;          // pressure derivatives at cell faces
-                double dprdxcc, dprdycc;                            // pressure derivatives at cell center
+                double dpdxfe, dpdxfw, dpdyfn, dpdyfs;              // pressure derivatives at cell faces
+                double dpdxcc, dpdycc;                              // pressure derivatives at cell center
                 int    ee1, ew1, en1, es1;                          // first level boundary indicator
                 int    ee2, ew2, en2, es2;                          // second level boundary indicator
+                int    epseR, epswR, epsnR, epssR;
+                int    epseL, epswL, epsnL, epssL;
                 bE2(i, k, bf, ee1, ew1, en1, es1, ee2, ew2, en2, es2);
 
                 uc0 = uN[i    ][k    ][u_];
@@ -446,53 +449,52 @@ void prediction(
                 vn2 = (en2 == NONE)? vn2 : bcc(BTU[en2], vn1,   dy, BCU[en2][v_]);
                 vs2 = (es2 == NONE)? vs2 : bcc(BTU[es2], vs1, - dy, BCU[es2][v_]);
 
-                ue2 = (ee1 == NONE)? ue2 : bcc(BTU[ee1], uw1,   3 * dx, BCU[ee1][u_]);
-                uw2 = (ew1 == NONE)? uw2 : bcc(BTU[ew1], ue1, - 3 * dx, BCU[ew1][u_]);
-                un2 = (en1 == NONE)? un2 : bcc(BTU[en1], us1,   3 * dy, BCU[en1][u_]);
-                us2 = (es1 == NONE)? us2 : bcc(BTU[es1], un1, - 3 * dy, BCU[es1][u_]);
-                ve2 = (ee1 == NONE)? ve2 : bcc(BTU[ee1], vw1,   3 * dx, BCU[ee1][v_]);
-                vw2 = (ew1 == NONE)? vw2 : bcc(BTU[ew1], ve1, - 3 * dx, BCU[ew1][v_]);
-                vn2 = (en1 == NONE)? vn2 : bcc(BTU[en1], vs1,   3 * dy, BCU[en1][v_]);
-                vs2 = (es1 == NONE)? vs2 : bcc(BTU[es1], vn1, - 3 * dy, BCU[es1][v_]);
-
                 ufe = (ee1 == NONE)? ufe : bcf(BTU[ee1], uc0,   0.5 * dx, BCU[ee1][u_]);
                 ufw = (ew1 == NONE)? ufw : bcf(BTU[ew1], uc0, - 0.5 * dx, BCU[ew1][u_]);
                 vfn = (en1 == NONE)? vfn : bcf(BTU[en1], vc0,   0.5 * dy, BCU[en1][v_]);
                 vfs = (es1 == NONE)? vfs : bcf(BTU[es1], vc0, - 0.5 * dy, BCU[es1][v_]);
-
                 
                 pe1 = (ee1 == NONE)? pe1 : bcc(BTP[ee1], pc0,   dx, BCP[ee1]);
                 pw1 = (ew1 == NONE)? pw1 : bcc(BTP[ew1], pc0, - dx, BCP[ew1]);
                 pn1 = (en1 == NONE)? pn1 : bcc(BTP[en1], pc0,   dy, BCP[en1]);
                 ps1 = (es1 == NONE)? ps1 : bcc(BTP[es1], pc0, - dy, BCP[es1]);
 
-                fue = flux(uw1, uc0, ue1, ue2, ufe);
-                fuw = flux(uw2, uw1, uc0, ue1, ufw);
-                fun = flux(us1, uc0, un1, un2, vfn);
-                fus = flux(us2, us1, uc0, un1, vfs);
-                fve = flux(vw1, vc0, ve1, ve2, ufe);
-                fvw = flux(vw2, vw1, vc0, ve1, ufw);
-                fvn = flux(vs1, vc0, vn1, vn2, vfn);
-                fvs = flux(vs2, vs1, vc0, vn1, vfs);
+                epseL = EPSILON3;
+                epseR = (ee1 == NONE)? EPSILON3 : EPSILON1;
+                epswL = (ew1 == NONE)? EPSILON3 : EPSILON1;
+                epswR = EPSILON3;
+                epsnL = EPSILON3;
+                epsnR = (en1 == NONE)? EPSILON3 : EPSILON1;
+                epssL = (es1 == NONE)? EPSILON3 : EPSILON1;
+                epssR = EPSILON3;
 
-                duudx   = (fue - fuw) / dx;
-                dvudy   = (fun - fus) / dy;
-                duvdx   = (fve - fvw) / dx;
-                dvvdy   = (fvn - fvs) / dy;
-                ddudxx  = (uw1 - 2 * uc0 + ue1) / (dx * dx);
-                ddudyy  = (us1 - 2 * uc0 + un1) / (dy * dy);
-                ddvdxx  = (vw1 - 2 * vc0 + ve1) / (dx * dx);
-                ddvdyy  = (vs1 - 2 * vc0 + vn1) / (dy * dy);
+                fue = flux(uw1, uc0, ue1, ue2, ufe, epseL, epseR);
+                fuw = flux(uw2, uw1, uc0, ue1, ufw, epswL, epswR);
+                fun = flux(us1, uc0, un1, un2, vfn, epsnL, epsnR);
+                fus = flux(us2, us1, uc0, un1, vfs, epssL, epssR);
+                fve = flux(vw1, vc0, ve1, ve2, ufe, epseL, epseR);
+                fvw = flux(vw2, vw1, vc0, ve1, ufw, epswL, epswR);
+                fvn = flux(vs1, vc0, vn1, vn2, vfn, epsnL, epsnR);
+                fvs = flux(vs2, vs1, vc0, vn1, vfs, epssL, epssR);
 
-                dprdxfe = (pe1 - pc0) / dx;
-                dprdxfw = (pc0 - pw1) / dx;
-                dprdyfn = (pn1 - pc0) / dy;
-                dprdyfs = (pc0 - ps1) / dy;
-                dprdxcc = (dprdxfe + dprdxfw) * 0.5;
-                dprdycc = (dprdyfn + dprdyfs) * 0.5;
+                duudx  = (fue - fuw) / dx;
+                dvudy  = (fun - fus) / dy;
+                duvdx  = (fve - fvw) / dx;
+                dvvdy  = (fvn - fvs) / dy;
+                ddudxx = (uw1 - 2 * uc0 + ue1) / (dx * dx);
+                ddudyy = (us1 - 2 * uc0 + un1) / (dy * dy);
+                ddvdxx = (vw1 - 2 * vc0 + ve1) / (dx * dx);
+                ddvdyy = (vs1 - 2 * vc0 + vn1) / (dy * dy);
 
-                uc0     = uc0 + dt * (- duudx - dvudy - dprdxcc + (ddudxx + ddudyy) / Re);
-                vc0     = vc0 + dt * (- duvdx - dvvdy - dprdycc + (ddvdxx + ddvdyy) / Re);
+                dpdxfe = (pe1 - pc0) / dx;
+                dpdxfw = (pc0 - pw1) / dx;
+                dpdyfn = (pn1 - pc0) / dy;
+                dpdyfs = (pc0 - ps1) / dy;
+                dpdxcc = (dpdxfe + dpdxfw) * 0.5;
+                dpdycc = (dpdyfn + dpdyfs) * 0.5;
+
+                uc0    = uc0 + dt * (- duudx - dvudy - dpdxcc + (ddudxx + ddudyy) / Re);
+                vc0    = vc0 + dt * (- duvdx - dvvdy - dpdycc + (ddvdxx + ddvdyy) / Re);
 
                 u[i][k][u_] = uc0;
                 u[i][k][v_] = vc0;
@@ -522,14 +524,14 @@ int poisson(
         for (int i = WBOUND; i < EBOUND; i ++) {
             for (int k = SBOUND; k < NBOUND; k ++) {
                 if (ff[i][k] == FLUID) {
-                    double ufe, ufw, vfn, vfs;             // velocity at cell faces
-                    double uc0, vc0;                       // velocity at cell center
-                    double pie1, piw1, pic0, pin1, pis1;   // pressure potential at each direction
-                    double dudx, dvdy;                     // velocity gradient at cell center
-                    double dpdxfe, dpdxfw, dpdyfn, dpdyfs; // 1st derivatives at cell faces
-                    double ddpdxx, ddpdyy;                 // 2nd derivatives at cell center
+                    double ufe, ufw, vfn, vfs;                 // velocity at cell faces
+                    double uc0, vc0;                           // velocity at cell center
+                    double pie1, piw1, pic0, pin1, pis1;       // pressure potential at each direction
+                    double dudx, dvdy;                         // velocity gradient at cell center
+                    double dpidxfe, dpidxfw, dpidyfn, dpidyfs; // 1st derivatives at cell faces
+                    double ddpidxx, ddpidyy;                   // 2nd derivatives at cell center
                     double psi, res;
-                    int    ee1, ew1, en1, es1;             // first level boundary indicator
+                    int    ee1, ew1, en1, es1;                 // first level boundary indicator
                     bE1(i, k, bf, ee1, ew1, en1, es1);
 
                     uc0  =  u[i    ][k    ][u_];
@@ -560,15 +562,15 @@ int poisson(
                     dudx     = (ufe - ufw) / dx;
                     dvdy     = (vfn - vfs) / dy;
 
-                    dpdxfe   = (pie1 - pic0) / dx;
-                    dpdxfw   = (pic0 - piw1) / dx;
-                    dpdyfn   = (pin1 - pic0) / dy;
-                    dpdyfs   = (pic0 - pis1) / dy;
-                    ddpdxx   = (dpdxfe - dpdxfw) / dx;
-                    ddpdyy   = (dpdyfn - dpdyfs) / dy;
+                    dpidxfe   = (pie1 - pic0) / dx;
+                    dpidxfw   = (pic0 - piw1) / dx;
+                    dpidyfn   = (pin1 - pic0) / dy;
+                    dpidyfs   = (pic0 - pis1) / dy;
+                    ddpidxx   = (dpidxfe - dpidxfw) / dx;
+                    ddpidyy   = (dpidyfn - dpidyfs) / dy;
 
                     psi      = (dudx + dvdy) / dt;
-                    res      = dtau * (ddpdxx + ddpdyy - psi);
+                    res      = dtau * (ddpidxx + ddpidyy - psi);
 
                     pic0     = pic0 + res;
                     R        = R + res * res;
@@ -610,12 +612,12 @@ double projection(
     for (int i = WBOUND; i < EBOUND; i ++) {
         for (int k = SBOUND; k < NBOUND; k ++) {
             if (ff[i][k] == FLUID) {
-                double pie1, piw1, pic0, pin1, pis1;   // pressure potential at each direction
-                double dpdxfe, dpdxfw, dpdyfn, dpdyfs; // pressure gradient at cell faces
-                double dpdxcc, dpdycc;                 // pressure gradient at cell center
-                double uc0, vc0;                       // velocity at cell center
-                double ufe, ufw, vfn, vfs;             // velocity at cell faces
-                int    ee1, ew1, en1, es1;             // first level boundary indicator
+                double pie1, piw1, pic0, pin1, pis1;       // pressure potential at each direction
+                double dpidxfe, dpidxfw, dpidyfn, dpidyfs; // pressure gradient at cell faces
+                double dpidxcc, dpidycc;                   // pressure gradient at cell center
+                double uc0, vc0;                           // velocity at cell center
+                double ufe, ufw, vfn, vfs;                 // velocity at cell faces
+                int    ee1, ew1, en1, es1;                 // first level boundary indicator
                 bE1(i, k, bf, ee1, ew1, en1, es1);
 
                 uc0  =   u[i    ][k    ][u_];
@@ -643,20 +645,20 @@ double projection(
                 pin1 = (en1 == NONE)? pin1 : bcc(BTP[en1], pic0,   dy, BCP[en1]);
                 pis1 = (es1 == NONE)? pis1 : bcc(BTP[es1], pic0, - dy, BCP[es1]);
 
-                dpdxfe = (pie1 - pic0) / dx;
-                dpdxfw = (pic0 - piw1) / dx;
-                dpdyfn = (pin1 - pic0) / dy;
-                dpdyfs = (pic0 - pis1) / dy;
-                dpdxcc = 0.5 * (dpdxfe + dpdxfw);
-                dpdycc = 0.5 * (dpdyfn + dpdyfs);
+                dpidxfe = (pie1 - pic0) / dx;
+                dpidxfw = (pic0 - piw1) / dx;
+                dpidyfn = (pin1 - pic0) / dy;
+                dpidyfs = (pic0 - pis1) / dy;
+                dpidxcc = 0.5 * (dpidxfe + dpidxfw);
+                dpidycc = 0.5 * (dpidyfn + dpidyfs);
 
-                uc0 = uc0 - dt * dpdxcc;
-                vc0 = vc0 - dt * dpdycc;
+                uc0 = uc0 - dt * dpidxcc;
+                vc0 = vc0 - dt * dpidycc;
                 
-                ufe = ufe - dt * dpdxfe;
-                ufw = ufw - dt * dpdxfw;
-                vfn = vfn - dt * dpdyfn;
-                vfs = vfs - dt * dpdyfs;
+                ufe = ufe - dt * dpidxfe;
+                ufw = ufw - dt * dpidxfw;
+                vfn = vfn - dt * dpidyfn;
+                vfs = vfs - dt * dpidyfs;
 
                 ufe = (ee1 == NONE)? ufe : bcf(BTU[ee1], uc0,   0.5 * dx, BCU[ee1][u_]);
                 ufw = (ew1 == NONE)? ufw : bcf(BTU[ew1], uc0, - 0.5 * dx, BCU[ew1][u_]);
