@@ -1,6 +1,0 @@
-#!/usr/bin/bash
-if [ $1 == 128 ]; then
-    ./ns2dccg $2 $3
-elif [ $1 == 256 ]; then
-    ./ns2dccg256 $2 $3
-fi
