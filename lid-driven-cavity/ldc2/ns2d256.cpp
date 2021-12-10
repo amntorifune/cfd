@@ -18,8 +18,8 @@ using namespace std;
 #define _dirichlet 0
 #define _neumann   1
 
-const int NCX      = 128;
-const int NCY      = 128;
+const int NCX      = 256;
+const int NCY      = 256;
 const int GHST     = 2;
 const int NNX      = NCX + 2 * GHST;
 const int NNY      = NCY + 2 * GHST;
@@ -892,7 +892,7 @@ void ns2d(
     double div[NNX][NNY]
 ) {
     double t        = 0;
-    double E        = 1E-3;
+    double E        = 2E-3;
     double diver    = calcdiv(uF, u, ff, bf, div, t);
     double maxdiver = 0;
     int    it, it2;
@@ -924,7 +924,7 @@ void o2fo(double u[NNX][NNY][2], double p[NNX][NNY], double uF[NNX][NNY][2], dou
     FILE  *fo;
     char   fname[128];
     double xpos, ypos;
-    sprintf(fname, "Re%d@c.128.csv", int(Re));
+    sprintf(fname, "Re%d@c.256.csv", int(Re));
     fo = fopen(fname, "w+t");
 
     if ( fo == NULL ) {
@@ -942,7 +942,7 @@ void o2fo(double u[NNX][NNY][2], double p[NNX][NNY], double uF[NNX][NNY][2], dou
         fclose(fo);
     }
 
-    sprintf(fname, "Re%d@fx.128.csv", int(Re));
+    sprintf(fname, "Re%d@fx.256.csv", int(Re));
     fo = fopen(fname, "w+t");
     if ( fo == NULL ) {
         printf("\nERROR when opening file\n");
@@ -959,7 +959,7 @@ void o2fo(double u[NNX][NNY][2], double p[NNX][NNY], double uF[NNX][NNY][2], dou
         fclose(fo);
     }
 
-    sprintf(fname, "Re%d@fy.128.csv", int(Re));
+    sprintf(fname, "Re%d@fy.256.csv", int(Re));
     fo = fopen(fname, "w+t");
     if ( fo == NULL ) {
         printf("\nERROR when opening file\n");
