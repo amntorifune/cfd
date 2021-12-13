@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+
+./ldc$1$2 $3 $4
+
+# if [ $1 == 128 ]; then
+#     if [ $2 == jac ]; then
+#         ./ldc128jac $3 $4
+#     elif [ $2 == sor ]; then
+#         ./ldc128sor $3 $4
+#     fi
+# elif [ $1 == 256 ]; then
+#     if [ $2 == jac ]; then
+#         ./ldc256jac $3 $4
+#     elif [ $2 == sor ]; then
+#         ./ldc256sor $3 $4
+#     fi
+# fi
