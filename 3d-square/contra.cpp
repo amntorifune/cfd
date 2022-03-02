@@ -1,11 +1,11 @@
 #include "topo.h"
 
 void contra(
-    double   U[NX + 2][NY + 2][NZ + 2][3],
-    double  UC[NX + 2][NY + 2][NZ + 2][3],
-    double  UU[NX + 2][NY + 2][NZ + 2][3],
-    double  KX[NX + 2][NY + 2][NZ + 2][3],
-    double   J[NX + 2][NY + 2][NZ + 2]
+    double  U[NX + 2][NY + 2][NZ + 2][3],
+    double UC[NX + 2][NY + 2][NZ + 2][3],
+    double UU[NX + 2][NY + 2][NZ + 2][3],
+    double KX[NX + 2][NY + 2][NZ + 2][3],
+    double  J[NX + 2][NY + 2][NZ + 2]
 ) {
     int    i, j, k;
     double JC0, K1X1, K2X2, K3X3;

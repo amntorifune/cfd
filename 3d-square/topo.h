@@ -5,9 +5,9 @@
 #define _y 1
 #define _z 2
 
-const double LX   = 2.5;
-const double LY   = 1.0;
-const double LZ   = 1.0;
+const double LX   = 25;
+const double LY   = 10;
+const double LZ   = 10;
 
 const int    NX   = 251;
 const int    NY   = 101;

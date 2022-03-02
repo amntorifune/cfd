@@ -7,9 +7,9 @@ void sor(
     double   C[NX + 2][NY + 2][NZ + 2][6],
     double   OMEGA,
     double   E,
-    double   MAXIT,
+    int      MAXIT,
     double   DT,
-    double  &IT,
+    int     &IT,
     double  &R
 ) {
     int    i, j, k;
