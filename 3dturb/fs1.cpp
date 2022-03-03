@@ -93,26 +93,9 @@ void fs1(
     double   DT,
     double   RI
 ) {
-    double ABX, ABY, ABZ; // abs of contravariant velocity at cell center
-    double ADVX, ADVY, ADVZ;    // advection terms of each component
-    double VISX, VISY, VISZ;    // viscoucity stress in each direction
-    double UE1, UE2, UW1, UW2;
-    double UN1, UN2, US1, US2;
-    double UT1, UT2, UB1, UB2;
-    double UC0U, UC0V, UC0W, UC0;
-    double UUE, UUW, UUN, UUS, UUT, UUB;
-    double JC0;
-    double C1, C2, C3, C7, C8, C9;
-    double NUE;
-    double DUDX, DUDY, DUDZ;
-    double DVDX, DVDY, DVDZ;
-    double DWDX, DWDY, DWDZ;
-    double K1X1, K2X2, K3X3;
-    double DNDX, DNDY, DNDZ;
-    double RSTX, RSTY, RSTZ;
-
 //  store the values of previous step
 
+    #pragma acc kernels loop independent collapse(2) present(U, UD)
     for (int i = 0; i <= NX + 1; i ++) {
         for (int j = 0; j <= NY + 1; j ++) {
             for (int k = 0; k <= NZ + 1; k ++) {
@@ -125,9 +108,28 @@ void fs1(
 
 // calculate values for inner points, i.e. [2:NX)[2:NY)[2:NZ)
 
+    #pragma acc kernels loop independent collapse(2) present(U, UD, UU, SGS, KX, J, C) copyin(ALPHA, DT, RI)
     for (int i = 2; i <= NX - 1; i ++) {
         for (int j = 2; j <= NY - 1; j ++) {
             for (int k = 2; k <= NZ - 1; k ++) {
+                double ABX, ABY, ABZ;
+                double ADVX, ADVY, ADVZ;
+                double VISX, VISY, VISZ;
+                double UE1, UE2, UW1, UW2;
+                double UN1, UN2, US1, US2;
+                double UT1, UT2, UB1, UB2;
+                double UC0U, UC0V, UC0W, UC0;
+                double UUE, UUW, UUN, UUS, UUT, UUB;
+                double JC0;
+                double C1, C2, C3, C7, C8, C9;
+                double NUE;
+                double DUDX, DUDY, DUDZ;
+                double DVDX, DVDY, DVDZ;
+                double DWDX, DWDY, DWDZ;
+                double K1X1, K2X2, K3X3;
+                double DNDX, DNDY, DNDZ;
+                double RSTX, RSTY, RSTZ;
+
                 K1X1 =  KX[i][j][k][0];
                 K2X2 =  KX[i][j][k][1];
                 K3X3 =  KX[i][j][k][2];

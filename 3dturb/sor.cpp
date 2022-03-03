@@ -25,6 +25,7 @@ void sor(
 
 //  red cells
 
+        #pragma acc kernels loop independent reduction(+:ERR) collapse(2) present(C, P, DIV) copyin(OMEGA, DT) copy(ERR)
         for (int i = 2; i <= NX - 1; i ++) {
             for (int j = 2; j <= NY - 1; j ++) {
                 for (int k = 2; k <= NZ - 1; k ++) {
@@ -63,6 +64,7 @@ void sor(
 
 //  black cells
 
+        #pragma acc kernels loop independent reduction(+:ERR) collapse(2) present(C, P, DIV) copyin(OMEGA, DT) copy(ERR)
         for (int i = 2; i <= NX - 1; i ++) {
             for (int j = 2; j <= NY - 1; j ++) {
                 for (int k = 2; k <= NZ - 1; k ++) {

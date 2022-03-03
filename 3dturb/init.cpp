@@ -13,17 +13,18 @@ void init(
     double   C[NX + 2][NY + 2][NZ + 2][6],
     double   G[NX + 2][NY + 2][NZ + 2][3]
 ) {
-    double XC0, XE1, XW1;
-    double YC0, YN1, YS1;
-    double ZC0, ZT1, ZB1;
-    double X1K1, X2K2, X3K3, X1KK1, X2KK2, X3KK3, DET;
-    double K1X1, K2X2, K3X3;
-    double G11, G22, G33;
-    double C1, C2, C3, C7, C8, C9;
-
+    #pragma acc kernels loop independent collapse(2) present(U, UD, UC, UU, P, SGS, X, KX, J, C, G)
     for (int i = 1; i <= NX; i ++) {
         for (int j = 1; j <= NY; j ++) {
             for (int k = 1; k <= NZ ; k ++) {
+                double XC0, XE1, XW1;
+                double YC0, YN1, YS1;
+                double ZC0, ZT1, ZB1;
+                double X1K1, X2K2, X3K3, X1KK1, X2KK2, X3KK3, DET;
+                double K1X1, K2X2, K3X3;
+                double G11, G22, G33;
+                double C1, C2, C3, C7, C8, C9;
+                
                 XC0   = X[i    ][j    ][k    ][0];
                 YC0   = X[i    ][j    ][k    ][1];
                 ZC0   = X[i    ][j    ][k    ][2];

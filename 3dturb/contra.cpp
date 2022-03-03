@@ -7,16 +7,16 @@ void contra(
     double KX[NX + 2][NY + 2][NZ + 2][3],
     double  J[NX + 2][NY + 2][NZ + 2]
 ) {
-    double JC0, K1X1, K2X2, K3X3;
-    double UC0U, UC0V, UC0W;
-    double UUC0, UE1U, UN1V, UT1W;
-    double UUE, UUN, UUT;
-
 //  contravariant velocity at cell center
 
+    #pragma acc kernels loop independent collapse(2) present(U, KX, J, UC)
     for (int i = 1; i <= NX; i ++) {
         for (int j = 1; j <= NY; j ++) {
             for (int k = 1; k <= NZ; k ++) {
+                double JC0;
+                double K1X1, K2X2, K3X3;
+                double UC0U, UC0V, UC0W;
+
                 UC0U =  U[i][j][k][0];
                 UC0V =  U[i][j][k][1];
                 UC0W =  U[i][j][k][2];
@@ -34,9 +34,14 @@ void contra(
 
 //  contravariant velocity at cell faces
 
+    #pragma acc kernels loop independent collapse(2) present(UC, UU)
     for (int i = 1; i <= NX; i ++) {
         for (int j = 1; j <= NY; j ++) {
             for (int k = 1; k <= NZ; k ++) {
+                double UC0U, UC0V, UC0W;
+                double UE1U, UN1V, UT1W;
+                double UUE, UUN, UUT;
+
                 UC0U = UC[i    ][j    ][k    ][0];
                 UC0V = UC[i    ][j    ][k    ][1];
                 UC0W = UC[i    ][j    ][k    ][2];

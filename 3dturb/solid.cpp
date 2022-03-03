@@ -4,6 +4,7 @@ void solid(
     double  U[NX + 2][NY + 2][NZ + 2][3],
     double UU[NX + 2][NY + 2][NZ + 2][3]
 ) {
+    #pragma acc kernels loop independent collapse(2) present(U, UU)
     for (int i = I1; i <= I2; i ++) {
         for (int j = J1; j <= J2; j ++) {
             for (int k = K1; k <= K2; k ++) {

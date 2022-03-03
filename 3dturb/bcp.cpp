@@ -7,13 +7,9 @@ void bcp(
     double KX[NX + 2][NY + 2][NZ + 2][3],
     double  RI
 ) {
-    double LAP, DK1, DK2, DK3, D2K1, D2K2, D2K3;
-    double WC0, WE1, WW1, WN1, WS1, WT1, WB1;
-    double C1, C2, C3, C7, C8, C9;
-    double X3K3;
-
 //  right and left boundaries : inlet and outlet, zero gradient
 
+    #pragma acc kernels loop independent collapse(2) present(P)
     for (int j = 1; j <= NY ; j ++) {
         for (int k = 1; k <= NZ; k ++) {
             P[1 ][j][k] = P[2     ][j][k];
@@ -23,6 +19,7 @@ void bcp(
 
 //  front and back boundaries : free, zero gradient
 
+    #pragma acc kernels loop independent collapse(2) present(P)
     for (int i = 1; i <= NX; i ++) {
         for (int k = 1; k <= NZ; k ++) {
             P[i][1 ][k] = P[i][2     ][k];
@@ -33,8 +30,14 @@ void bcp(
 //  upper boundary : free, zero gradient
 //  lower boundary : wall, use a wall NS equation
 
+    #pragma acc kernels loop independent collapse(2) present(C, U, KX, P) copyin(RI)
     for (int i = 1; i <= NX; i ++) {
         for (int j = 1; j <= NY; j ++) {
+            double LAP, DK1, DK2, DK3, D2K1, D2K2, D2K3;
+            double WC0, WE1, WW1, WN1, WS1, WT1, WB1;
+            double C1, C2, C3, C7, C8, C9;
+            double X3K3;
+            
             C1   = C[i    ][j    ][1    ][0];
             C2   = C[i    ][j    ][1    ][1];
             C3   = C[i    ][j    ][1    ][2];

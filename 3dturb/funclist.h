@@ -23,7 +23,6 @@ extern void init(
 
 extern void bcu(
     double   U[NX + 2][NY + 2][NZ + 2][3],
-    double  UU[NX + 2][NY + 2][NZ + 2][3],
     double  UD[NX + 2][NY + 2][NZ + 2][3],
     double  KX[NX + 2][NY + 2][NZ + 2][3],
     double   DT

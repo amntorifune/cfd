@@ -2,22 +2,22 @@
 
 void bcu(
     double  U[NX + 2][NY + 2][NZ + 2][3],
-    double UU[NX + 2][NY + 2][NZ + 2][3],
     double UD[NX + 2][NY + 2][NZ + 2][3],
     double KX[NX + 2][NY + 2][NZ + 2][3],
     double  DT
 ) {
-    double K1X1;
-    double DUX, DVX, DWX;
-    double UC0, UW1, UW2;
-    double VC0, VW1, VW2;
-    double WC0, WW1, WW2;
-
 //  right boundary : inlet, {u,v,w} = {1,0,0}
 //  left boundary : outlet, convective outlet condition
 
+    #pragma acc kernels loop independent collapse(2) present(U, UD, KX) copyin(DT)
     for (int j = 1; j <= NY; j ++) {
         for (int k = 1; k <= NZ; k ++) {
+            double K1X1;
+            double DUX, DVX, DWX;
+            double UC0, UW1, UW2;
+            double VC0, VW1, VW2;
+            double WC0, WW1, WW2;
+
             K1X1 = KX[NX    ][j][k][0];
             UC0  = UD[NX    ][j][k][0];
             VC0  = UD[NX    ][j][k][1];
@@ -50,6 +50,7 @@ void bcu(
 
 //  front and back boundaries : free, reflective, slip wall
 
+    #pragma acc kernels loop independent collapse(2) present(U)
     for (int i = 1; i <= NY; i ++) {
         for (int k = 1; k <= NZ; k ++) {
             U[i][1     ][k][0] =   U[i][2     ][k][0];
@@ -71,6 +72,7 @@ void bcu(
 //  upper boundary : free, reflective, slip wall
 //  lower boundary : non-slip wall, {u, v, w} = {0, 0, 0}
 
+    #pragma acc kernels loop independent collapse(2) present(U)
     for (int i = 1; i <= NX; i ++) {
         for (int j = 1; j <= NY; j ++) {
             U[i][j][1     ][0] =   0.0;
