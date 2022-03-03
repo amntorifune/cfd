@@ -27,24 +27,24 @@ double adv(
     double ABY,
     double ABZ,
     double JC0,
-    double ALP
+    double ALPHA
 ) {
     double ADVX, ADVY, ADVZ;
 
     ADVX = UUE * (- UE2 + 27 * UE1 - 27 * UC0 + UW1);
     ADVX = UUW * (- UE1 + 27 * UC0 - 27 * UW1 + UW2) + ADVX;
     ADVX = ADVX / (48.0 * JC0);
-    ADVX = ADVX + ALP * ABX * (UE2 - 4 * UE1 + 6 * UC0 - 4 * UW1 + UW2);
+    ADVX = ADVX + ALPHA * ABX * (UE2 - 4 * UE1 + 6 * UC0 - 4 * UW1 + UW2);
 
     ADVY = UUN * (- UN2 + 27 * UN1 - 27 * UC0 + US1);
     ADVY = UUS * (- UN1 + 27 * UC0 - 27 * US1 + US2) + ADVY;
     ADVY = ADVY / (48.0 * JC0);
-    ADVY = ADVY + ALP * ABY * (UN2 - 4 * UN1 + 6 * UC0 - 4 * US1 + US2);
+    ADVY = ADVY + ALPHA * ABY * (UN2 - 4 * UN1 + 6 * UC0 - 4 * US1 + US2);
 
     ADVZ = UUT * (- UT2 + 27 * UT1 - 27 * UC0 + UB1);
     ADVZ = UUB * (- UT1 + 27 * UC0 - 27 * UB1 + UB2) + ADVZ;
     ADVZ = ADVZ / (48.0 * JC0);
-    ADVZ = ADVZ + ALP * ABZ * (UT2 - 4 * UT1 + 6 * UC0 - 4 * UB1 + UB2);
+    ADVZ = ADVZ + ALPHA * ABZ * (UT2 - 4 * UT1 + 6 * UC0 - 4 * UB1 + UB2);
 
     return (ADVX + ADVY + ADVZ);
 }
@@ -93,9 +93,8 @@ void fs1(
     double   DT,
     double   RI
 ) {
-    int    i, j, k;             // indices
-    double ABSCU, ABSCV, ABSCW; // abs of contravariant velocity at cell center
-    double ADVU, ADVV, ADVW;    // advection terms of each component
+    double ABX, ABY, ABZ; // abs of contravariant velocity at cell center
+    double ADVX, ADVY, ADVZ;    // advection terms of each component
     double VISX, VISY, VISZ;    // viscoucity stress in each direction
     double UE1, UE2, UW1, UW2;
     double UN1, UN2, US1, US2;
@@ -114,9 +113,9 @@ void fs1(
 
 //  store the values of previous step
 
-    for (i = 0; i <= NX + 1; i ++) {
-        for (j = 0; j <= NY + 1; j ++) {
-            for (k = 0; k <= NZ + 1; k ++) {
+    for (int i = 0; i <= NX + 1; i ++) {
+        for (int j = 0; j <= NY + 1; j ++) {
+            for (int k = 0; k <= NZ + 1; k ++) {
                 UD[i][j][k][0] = U[i][j][k][0];
                 UD[i][j][k][1] = U[i][j][k][1];
                 UD[i][j][k][2] = U[i][j][k][2];
@@ -126,32 +125,32 @@ void fs1(
 
 // calculate values for inner points, i.e. [2:NX)[2:NY)[2:NZ)
 
-    for (i = 2; i <= NX - 1; i ++) {
-        for (j = 2; j <= NY - 1; j ++) {
-            for (k = 2; k <= NZ - 1; k ++) {
-                K1X1  =  KX[i][j][k][0];
-                K2X2  =  KX[i][j][k][1];
-                K3X3  =  KX[i][j][k][2];
-                UC0U  =  UD[i][j][k][0];
-                UC0V  =  UD[i][j][k][1];
-                UC0W  =  UD[i][j][k][2];
-                UUE   =  UU[i    ][j    ][k    ][0];
-                UUW   =  UU[i - 1][j    ][k    ][0];
-                UUN   =  UU[i    ][j    ][k    ][1];
-                UUS   =  UU[i    ][j - 1][k    ][1];
-                UUT   =  UU[i    ][j    ][k    ][2];
-                UUB   =  UU[i    ][j    ][k - 1][2];
-                JC0   =   J[i][j][k];
-                C1    =   C[i][j][k][0];
-                C2    =   C[i][j][k][1];
-                C3    =   C[i][j][k][2];
-                C7    =   C[i][j][k][3];
-                C8    =   C[i][j][k][4];
-                C9    =   C[i][j][k][5];
-                NUE   = SGS[i][j][k];
-                ABSCU = abs(UC0U * K1X1);
-                ABSCV = abs(UC0V * K2X2);
-                ABSCW = abs(UC0W * K3X3);
+    for (int i = 2; i <= NX - 1; i ++) {
+        for (int j = 2; j <= NY - 1; j ++) {
+            for (int k = 2; k <= NZ - 1; k ++) {
+                K1X1 =  KX[i][j][k][0];
+                K2X2 =  KX[i][j][k][1];
+                K3X3 =  KX[i][j][k][2];
+                UC0U =  UD[i][j][k][0];
+                UC0V =  UD[i][j][k][1];
+                UC0W =  UD[i][j][k][2];
+                UUE  =  UU[i    ][j    ][k    ][0];
+                UUN  =  UU[i    ][j    ][k    ][1];
+                UUT  =  UU[i    ][j    ][k    ][2];
+                UUW  =  UU[i - 1][j    ][k    ][0];
+                UUS  =  UU[i    ][j - 1][k    ][1];
+                UUB  =  UU[i    ][j    ][k - 1][2];
+                JC0  =   J[i][j][k];
+                C1   =   C[i][j][k][0];
+                C2   =   C[i][j][k][1];
+                C3   =   C[i][j][k][2];
+                C7   =   C[i][j][k][3];
+                C8   =   C[i][j][k][4];
+                C9   =   C[i][j][k][5];
+                NUE  = SGS[i][j][k];
+                ABX  = abs(UC0U * K1X1);
+                ABY  = abs(UC0V * K2X2);
+                ABZ  = abs(UC0W * K3X3);
 
 //  ADV and VIS terms for u[u]
 
@@ -168,7 +167,7 @@ void fs1(
                 UT2  = UD[i    ][j    ][k + 2][0];
                 UB1  = UD[i    ][j    ][k - 1][0];
                 UB2  = UD[i    ][j    ][k - 2][0];
-                ADVU = adv(UC0, UE1, UE2, UW1, UW2, UN1, UN2, US1, US2, UT1, UT2, UB1, UB2, UUE, UUW, UUN, UUS, UUT, UUB, ABSCU, ABSCV, ABSCW, JC0, ALPHA);
+                ADVX = adv(UC0, UE1, UE2, UW1, UW2, UN1, UN2, US1, US2, UT1, UT2, UB1, UB2, UUE, UUW, UUN, UUS, UUT, UUB, ABX, ABY, ABZ, JC0, ALPHA);
                 VISX = vis(UC0, UE1, UW1, UN1, US1, UT1, UB1, NUE, RI, C1, C2, C3, C7, C8, C9);
                 DUDX = 0.5 * (UE1 - UW1) * K1X1;
                 DUDY = 0.5 * (UN1 - US1) * K2X2;
@@ -189,7 +188,7 @@ void fs1(
                 UT2  = UD[i    ][j    ][k + 2][1];
                 UB1  = UD[i    ][j    ][k - 1][1];
                 UB2  = UD[i    ][j    ][k - 2][1];
-                ADVV = adv(UC0, UE1, UE2, UW1, UW2, UN1, UN2, US1, US2, UT1, UT2, UB1, UB2, UUE, UUW, UUN, UUS, UUT, UUB, ABSCU, ABSCV, ABSCW, JC0, ALPHA);
+                ADVY = adv(UC0, UE1, UE2, UW1, UW2, UN1, UN2, US1, US2, UT1, UT2, UB1, UB2, UUE, UUW, UUN, UUS, UUT, UUB, ABX, ABY, ABZ, JC0, ALPHA);
                 VISY = vis(UC0, UE1, UW1, UN1, US1, UT1, UB1, NUE, RI, C1, C2, C3, C7, C8, C9);
                 DVDX = 0.5 * (UE1 - UW1) * K1X1;
                 DVDY = 0.5 * (UN1 - US1) * K2X2;
@@ -210,7 +209,7 @@ void fs1(
                 UT2  = UD[i    ][j    ][k + 2][2];
                 UB1  = UD[i    ][j    ][k - 1][2];
                 UB2  = UD[i    ][j    ][k - 2][2];
-                ADVW = adv(UC0, UE1, UE2, UW1, UW2, UN1, UN2, US1, US2, UT1, UT2, UB1, UB2, UUE, UUW, UUN, UUS, UUT, UUB, ABSCU, ABSCV, ABSCW, JC0, ALPHA);
+                ADVZ = adv(UC0, UE1, UE2, UW1, UW2, UN1, UN2, US1, US2, UT1, UT2, UB1, UB2, UUE, UUW, UUN, UUS, UUT, UUB, ABX, ABY, ABZ, JC0, ALPHA);
                 VISZ = vis(UC0, UE1, UW1, UN1, US1, UT1, UB1, NUE, RI, C1, C2, C3, C7, C8, C9);
                 DWDX = 0.5 * (UE1 - UW1) * K1X1;
                 DWDY = 0.5 * (UN1 - US1) * K2X2;
@@ -222,14 +221,14 @@ void fs1(
                 DNDY = K2X2 * 0.5 * (SGS[i    ][j + 1][k    ] - SGS[i    ][j - 1][k    ]);
                 DNDZ = K3X3 * 0.5 * (SGS[i    ][j    ][k + 1] - SGS[i    ][j    ][k - 1]);
                 RSTX = (DUDX + DUDX) * DNDX + (DUDY + DVDX) * DNDY + (DUDZ + DWDX) * DNDZ;
-                RSTY = (DUDY + DVDX) * DNDX + (DVDY + DVDY) * DNDY + (DVDZ + DWDY) * DNDZ;
-                RSTZ = (DUDZ + DWDX) * DNDX + (DVDZ + DWDY) * DNDY + (DWDZ + DWDZ) * DNDZ;
+                RSTY = (DVDX + DUDY) * DNDX + (DVDY + DVDY) * DNDY + (DVDZ + DWDY) * DNDZ;
+                RSTZ = (DWDX + DUDZ) * DNDX + (DWDY + DVDZ) * DNDY + (DWDZ + DWDZ) * DNDZ;
 
 // intermediate velocity vector
 
-                U[i][j][k][0] = UC0U + DT * (- ADVU + VISX + RSTX);
-                U[i][j][k][1] = UC0V + DT * (- ADVV + VISY + RSTY);
-                U[i][j][k][2] = UC0W + DT * (- ADVW + VISZ + RSTZ);
+                U[i][j][k][0] = UC0U + DT * (- ADVX + VISX + RSTX);
+                U[i][j][k][1] = UC0V + DT * (- ADVY + VISY + RSTY);
+                U[i][j][k][2] = UC0W + DT * (- ADVZ + VISZ + RSTZ);
 
             }
         }

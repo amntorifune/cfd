@@ -8,7 +8,6 @@ void fio(
     double X[NX + 2][NY + 2][NZ + 2][3],
     char*  fname
 ) {
-    int    i, j, k;
     double X1, X2, X3, U1, U2, U3, PP;
     FILE  *fo;
 
@@ -18,9 +17,9 @@ void fio(
     }
     else {
         fprintf(fo, "x,y,z,u,v,w,p\n");
-        for (i = 1; i <= NX; i ++) {
-            for (j = 1; j <= NY; j ++) {
-                for (k = 1; k <= NZ; k ++) {
+        for (int i = 1; i <= NX; i ++) {
+            for (int j = 1; j <= NY; j ++) {
+                for (int k = 1; k <= NZ; k ++) {
                     X1 = X[i][j][k][0];
                     X2 = X[i][j][k][1];
                     X3 = X[i][j][k][2];

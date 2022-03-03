@@ -12,7 +12,6 @@ void sor(
     int     &IT,
     double  &R
 ) {
-    int    i, j, k;
     double RP, ERR;
     double AC0, AE1, AW1, AN1, AS1, AT1, AB1;
     double PC0, PE1, PW1, PN1, PS1, PT1, PB1;
@@ -26,9 +25,9 @@ void sor(
 
 //  red cells
 
-        for (i = 2; i <= NX - 1; i ++) {
-            for (j = 2; j <= NY - 1; j ++) {
-                for (k = 2; k <= NZ - 1; k ++) {
+        for (int i = 2; i <= NX - 1; i ++) {
+            for (int j = 2; j <= NY - 1; j ++) {
+                for (int k = 2; k <= NZ - 1; k ++) {
                     if ((i + j + k) % 2 == 0) {
                         RHS = DIV[i][j][k] / DT;
                         C1  = C[i][j][k][0];
@@ -64,9 +63,9 @@ void sor(
 
 //  black cells
 
-        for (i = 2; i <= NX - 1; i ++) {
-            for (j = 2; j <= NY - 1; j ++) {
-                for (k = 2; k <= NZ - 1; k ++) {
+        for (int i = 2; i <= NX - 1; i ++) {
+            for (int j = 2; j <= NY - 1; j ++) {
+                for (int k = 2; k <= NZ - 1; k ++) {
                     if ((i + j + k) % 2 == 1) {
                         RHS = DIV[i][j][k] / DT;
                         C1  = C[i][j][k][0];

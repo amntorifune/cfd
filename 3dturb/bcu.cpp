@@ -14,7 +14,7 @@ void bcu(
     double WC0, WW1, WW2;
 
 //  right boundary : inlet, {u,v,w} = {1,0,0}
-//  left boundary : outlet, special treatment
+//  left boundary : outlet, convective outlet condition
 
     for (int j = 1; j <= NY; j ++) {
         for (int k = 1; k <= NZ; k ++) {
