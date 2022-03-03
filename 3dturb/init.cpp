@@ -13,7 +13,6 @@ void init(
     double   C[NX + 2][NY + 2][NZ + 2][6],
     double   G[NX + 2][NY + 2][NZ + 2][3]
 ) {
-    int    i, j, k;
     double XC0, XE1, XW1;
     double YC0, YN1, YS1;
     double ZC0, ZT1, ZB1;
@@ -22,9 +21,9 @@ void init(
     double G11, G22, G33;
     double C1, C2, C3, C7, C8, C9;
 
-    for (i = 1; i <= NX; i ++) {
-        for (j = 1; j <= NY; j ++) {
-            for (k = 1; k <= NZ ; k ++) {
+    for (int i = 1; i <= NX; i ++) {
+        for (int j = 1; j <= NY; j ++) {
+            for (int k = 1; k <= NZ ; k ++) {
                 XC0   = X[i    ][j    ][k    ][0];
                 YC0   = X[i    ][j    ][k    ][1];
                 ZC0   = X[i    ][j    ][k    ][2];
@@ -80,6 +79,9 @@ void init(
                 UD[i][j][k][0] = 0.0;
                 UD[i][j][k][1] = 0.0;
                 UD[i][j][k][2] = 0.0;
+                UC[i][j][k][0] = 0.0;
+                UC[i][j][k][1] = 0.0;
+                UC[i][j][k][2] = 0.0;
                 UU[i][j][k][0] = 0.0;
                 UU[i][j][k][1] = 0.0;
                 UU[i][j][k][2] = 0.0;

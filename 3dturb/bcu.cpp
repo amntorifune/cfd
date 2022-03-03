@@ -7,7 +7,6 @@ void bcu(
     double KX[NX + 2][NY + 2][NZ + 2][3],
     double  DT
 ) {
-    int    i, j, k;
     double K1X1;
     double DUX, DVX, DWX;
     double UC0, UW1, UW2;
@@ -17,9 +16,8 @@ void bcu(
 //  right boundary : inlet, {u,v,w} = {1,0,0}
 //  left boundary : outlet, special treatment
 
-    for (j = 1; j <= NY; j ++) {
-        for (k = 1; k <= NZ; k ++) {
-
+    for (int j = 1; j <= NY; j ++) {
+        for (int k = 1; k <= NZ; k ++) {
             K1X1 = KX[NX    ][j][k][0];
             UC0  = UD[NX    ][j][k][0];
             VC0  = UD[NX    ][j][k][1];
@@ -52,8 +50,8 @@ void bcu(
 
 //  front and back boundaries : free, reflective, slip wall
 
-    for (i = 1; i <= NY; i ++) {
-        for (k = 1; k <= NZ; k ++) {
+    for (int i = 1; i <= NY; i ++) {
+        for (int k = 1; k <= NZ; k ++) {
             U[i][1     ][k][0] =   U[i][2     ][k][0];
             U[i][1     ][k][1] =   0.0;
             U[i][1     ][k][2] =   U[i][2     ][k][2];
@@ -73,8 +71,8 @@ void bcu(
 //  upper boundary : free, reflective, slip wall
 //  lower boundary : non-slip wall, {u, v, w} = {0, 0, 0}
 
-    for (i = 1; i <= NX; i ++) {
-        for (j = 1; j <= NY; j ++) {
+    for (int i = 1; i <= NX; i ++) {
+        for (int j = 1; j <= NY; j ++) {
             U[i][j][1     ][0] =   0.0;
             U[i][j][1     ][1] =   0.0;
             U[i][j][1     ][2] =   0.0;
