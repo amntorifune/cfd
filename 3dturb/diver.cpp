@@ -7,10 +7,9 @@ void diver(
     double DIV[NX + 2][NY + 2][NZ + 2],
     double  &AD
 ) {
-    
-
-    AD = 0;
-    #pragma acc kernels loop independent reduction(+:AD) collapse(2) present(UU, J, DIV) copy(AD)
+    double ADL;
+    ADL = 0;
+    #pragma acc kernels loop independent reduction(+:ADL) collapse(2) present(UU, J, DIV) copy(ADL)
     for (int i = 2; i <= NX - 1; i ++) {
         for (int j = 2; j < NY - 1; j ++) {
             for (int k = 2; k < NZ - 1; k ++) {
@@ -26,11 +25,12 @@ void diver(
                 UUS = UU[i    ][j - 1][k    ][1];
                 UUB = UU[i    ][j    ][k - 1][2];
 
-                D  = (UUE - UUW + UUN - UUS + UUT - UUB) / (JC0);
-                AD = AD + D * D;
+                D   = (UUE - UUW + UUN - UUS + UUT - UUB) / (JC0);
+                ADL = ADL + D * D;
                 DIV[i][j][k] = D;
             }
         }
     }
-    AD = sqrt(AD / NXYZ);
+    ADL = sqrt(ADL / NXYZ);
+    AD  = ADL;
 }

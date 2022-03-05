@@ -8,14 +8,15 @@ void fs2 (
     double  G[NX + 2][NY + 2][NZ + 2][3],
     double  DT
 ) {
-    double D1, D2, D3;
-    double PC0, PE1, PW1, PN1, PS1, PT1, PB1;
-    double K1X1, K2X2, K3X3;
-    double G11C0, G11E1, G22C0, G22N1, G33C0, G33T1;
-
+    #pragma acc kernels loop independent collapse(2) present(U, UU, P, KX, G) copyin(DT)
     for (int i = 2; i <= NX - 1; i ++) {
         for (int j = 2; j <= NY - 1; j ++) {
             for (int k = 2; k <= NZ - 1; k ++) {
+                double D1, D2, D3;
+                double PC0, PE1, PW1, PN1, PS1, PT1, PB1;
+                double K1X1, K2X2, K3X3;
+                double G11C0, G11E1, G22C0, G22N1, G33C0, G33T1;
+                
                 PC0   =  P[i    ][j    ][k    ];
                 PE1   =  P[i + 1][j    ][k    ];
                 PW1   =  P[i - 1][j    ][k    ];

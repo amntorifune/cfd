@@ -81,6 +81,18 @@ extern void sor(
     double  &R
 );
 
+extern void jacob(
+    double   P[NX + 2][NY + 2][NZ + 2],
+    double DIV[NX + 2][NY + 2][NZ + 2],
+    double   C[NX + 2][NY + 2][NZ + 2][6],
+    double   OMEGA,
+    double   E,
+    int      MAXIT,
+    double   DT,
+    int     &IT,
+    double  &R
+);
+
 extern void avp0(
     double   P[NX + 2][NY + 2][NZ + 2]
 );
@@ -98,7 +110,8 @@ extern void fio(
     double   U[NX + 2][NY + 2][NZ + 2][3],
     double   P[NX + 2][NY + 2][NZ + 2],
     double   X[NX + 2][NY + 2][NZ + 2][3],
-    char*    fname
+    double DIV[NX + 2][NY + 2][NZ + 2],
+    char*  fname
 );
 
 #endif

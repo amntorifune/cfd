@@ -12,11 +12,7 @@ void sor(
     int     &IT,
     double  &R
 ) {
-    double RP, ERR;
-    double AC0, AE1, AW1, AN1, AS1, AT1, AB1;
-    double PC0, PE1, PW1, PN1, PS1, PT1, PB1;
-    double C1, C2, C3, C7, C8, C9;
-    double RHS;
+    double ERR;
 
     IT = 0;
     R  = 1E9;
@@ -30,6 +26,11 @@ void sor(
             for (int j = 2; j <= NY - 1; j ++) {
                 for (int k = 2; k <= NZ - 1; k ++) {
                     if ((i + j + k) % 2 == 0) {
+                        double AC0, AE1, AW1, AN1, AS1, AT1, AB1;
+                        double PC0, PE1, PW1, PN1, PS1, PT1, PB1;
+                        double C1, C2, C3, C7, C8, C9;
+                        double RHS, RP;
+
                         RHS = DIV[i][j][k] / DT;
                         C1  = C[i][j][k][0];
                         C2  = C[i][j][k][1];
@@ -69,6 +70,11 @@ void sor(
             for (int j = 2; j <= NY - 1; j ++) {
                 for (int k = 2; k <= NZ - 1; k ++) {
                     if ((i + j + k) % 2 == 1) {
+                        double AC0, AE1, AW1, AN1, AS1, AT1, AB1;
+                        double PC0, PE1, PW1, PN1, PS1, PT1, PB1;
+                        double C1, C2, C3, C7, C8, C9;
+                        double RHS, RP;
+
                         RHS = DIV[i][j][k] / DT;
                         C1  = C[i][j][k][0];
                         C2  = C[i][j][k][1];

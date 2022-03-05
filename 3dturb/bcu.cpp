@@ -51,7 +51,7 @@ void bcu(
 //  front and back boundaries : free, reflective, slip wall
 
     #pragma acc kernels loop independent collapse(2) present(U)
-    for (int i = 1; i <= NY; i ++) {
+    for (int i = 1; i <= NX; i ++) {
         for (int k = 1; k <= NZ; k ++) {
             U[i][1     ][k][0] =   U[i][2     ][k][0];
             U[i][1     ][k][1] =   0.0;
@@ -90,5 +90,4 @@ void bcu(
             U[i][j][NZ + 1][2] = - U[i][j][NZ - 1][2];
         }
     }
-
 }
