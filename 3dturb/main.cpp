@@ -16,10 +16,6 @@ int main(void) {
         contra(U, UC, UU, KX, J);
         solid(U, UU);
         diver(UU, J, DIV, AD);
-
-        printf("d(%5.8lf)", AD);
-        fflush(stdout);
-
         do {
             sor(P, DIV, C, OMEGA, EPOI, MAXIT, DT, IT, R);
             // jacob(P, DIV, C, OMEGA, EPOI, MAXIT, DT, IT, R);
