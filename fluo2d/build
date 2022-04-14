@@ -1,0 +1,29 @@
+#!/usr/bin/bash
+
+rm ./obj/*
+
+date > build.txt
+
+echo nvc++ -c bcu.cpp     -acc -Minfo=accel -o ./obj/bcu.o     >> build.txt
+     nvc++ -c bcu.cpp     -acc -Minfo=accel -o ./obj/bcu.o    &>> build.txt
+echo ___________________________________________________       >> build.txt
+echo nvc++ -c bcp.cpp     -acc -Minfo=accel -o ./obj/bcp.o     >> build.txt
+     nvc++ -c bcp.cpp     -acc -Minfo=accel -o ./obj/bcp.o    &>> build.txt
+echo ___________________________________________________       >> build.txt
+echo nvc++ -c ns.cpp      -acc -Minfo=accel -o ./obj/ns.o      >> build.txt
+     nvc++ -c ns.cpp      -acc -Minfo=accel -o ./obj/ns.o     &>> build.txt
+echo ___________________________________________________       >> build.txt
+echo nvc++ -c contra.cpp  -acc -Minfo=accel -o ./obj/contra.o  >> build.txt
+     nvc++ -c contra.cpp  -acc -Minfo=accel -o ./obj/contra.o &>> build.txt
+echo ___________________________________________________       >> build.txt
+echo nvc++ -c diver.cpp   -acc -Minfo=accel -o ./obj/diver.o   >> build.txt
+     nvc++ -c diver.cpp   -acc -Minfo=accel -o ./obj/diver.o  &>> build.txt
+echo ___________________________________________________       >> build.txt
+echo nvc++ -c ls.cpp      -acc -Minfo=accel -o ./obj/ls.o      >> build.txt
+     nvc++ -c ls.cpp      -acc -Minfo=accel -o ./obj/ls.o     &>> build.txt
+echo ___________________________________________________       >> build.txt
+echo nvc++ -c main.cpp    -acc -Minfo=accel -o ./obj/main.o    >> build.txt
+     nvc++ -c main.cpp    -acc -Minfo=accel -o ./obj/main.o   &>> build.txt
+echo ___________________________________________________       >> build.txt
+echo nvc++ ./obj/bcu.o ./obj/bcp.o ./obj/ns.o ./obj/contra.o ./obj/diver.o ./obj/ls.o ./obj/main.o -acc -Minfo=accel -o 3dturb  >> build.txt
+nvc++ ./obj/bcu.o ./obj/bcp.o ./obj/ns.o ./obj/contra.o ./obj/diver.o ./obj/ls.o ./obj/main.o -acc -Minfo=accel -o 3dturb &>> build.txt
