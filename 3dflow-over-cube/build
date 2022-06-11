@@ -1,4 +1,0 @@
-#!/usr/bin/bash
-
-g++ -c init.cpp -o init.o
-g++ main.cpp -o main init.o
