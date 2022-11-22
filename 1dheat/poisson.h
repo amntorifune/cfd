@@ -341,7 +341,7 @@ static void precondition_sor(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_t
                         real_t _l  = x.get(il);
                         real_t _c  = x.get(ic);
                         real_t _d  = (b.get(ic) - (_r * cr + _c * cc + _l * cl)) / cc;
-                        x.get(ic)  = _c + sor_omega * _d;
+                        x.get(ic)  = _c + 0.9 * _d;
                     }
                 }
             }
@@ -362,7 +362,7 @@ static void precondition_sor(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_t
                         real_t _l  = x.get(il);
                         real_t _c  = x.get(ic);
                         real_t _d  = (b.get(ic) - (_r * cr + _c * cc + _l * cl)) / cc;
-                        x.get(ic)  = _c + sor_omega * _d;
+                        x.get(ic)  = _c + 0.9 * _d;
                     }
                 }
             }
@@ -399,23 +399,23 @@ static void poisson_pbicgstab(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_
     int it = 0;
     calc_res(a, x, b, r, dummy, mesh, dom, stencil);
 
-    t.update_self();
-    for(int i = 0; i < dom.num; i ++) {
-        printf("%10.3e ", x.get(i));
-    }
-    r.update_self();
-    printf("\n");
-    for(int i = 0; i < dom.num; i ++) {
-        printf("%10.3e ", r.get(i));
-    }
-    printf("\n");
+    // t.update_self();
+    // for(int i = 0; i < dom.num; i ++) {
+    //     printf("%10.3e ", x.get(i));
+    // }
+    // r.update_self();
+    // printf("\n");
+    // for(int i = 0; i < dom.num; i ++) {
+    //     printf("%10.3e ", r.get(i));
+    // }
+    // printf("\n");
 
     assign<real_t>(_r, r);
-    _r.update_self();
-    for(int i = 0; i < dom.num; i ++) {
-        printf("%10.3e ", _r.get(i));
-    }
-    printf("\n");
+    // _r.update_self();
+    // for(int i = 0; i < dom.num; i ++) {
+    //     printf("%10.3e ", _r.get(i));
+    // }
+    // printf("\n");
 
     assign<real_t>(q, 0);
     _rho  = 1;
@@ -425,16 +425,16 @@ static void poisson_pbicgstab(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_
         rho = dot2(_r, r, dom);
         if (fabs(rho) < __FLT_MIN__) {
             printf("\nsmall rho\n");
-            r.update_self();
-            for(int i = 0; i < dom.num; i ++) {
-                printf("%10.3e ", r.get(i));
-            }
-            printf("\n");
+            // r.update_self();
+            // for(int i = 0; i < dom.num; i ++) {
+            //     printf("%10.3e ", r.get(i));
+            // }
+            // printf("\n");
 
-            _r.update_self();
-            for(int i = 0; i < dom.num; i ++) {
-                printf("%10.3e ", _r.get(i));
-            }
+            // _r.update_self();
+            // for(int i = 0; i < dom.num; i ++) {
+            //     printf("%10.3e ", _r.get(i));
+            // }
             printf("\n");
             printf("%10.3e\n", rho);
             break;
@@ -462,8 +462,9 @@ static void poisson_pbicgstab(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_
         norm = calc_norm(r);
         it ++;
         printf("\r%6d %10.3e %10.3e", it, norm, rho);
+        fflush(stdout);
 
-        if (it % 1 == 0) {
+        /* if (it % 1 == 0) {
             x.update_self();
             FILE *fo;
             char fname[128];
@@ -485,7 +486,7 @@ static void poisson_pbicgstab(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_
                     }
                 }
             }
-        }
+        } */
     } while (norm > 1e-9);
     printf("\n");
     _r.off_device();

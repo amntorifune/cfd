@@ -58,36 +58,36 @@ int main() {
     res.update_self();
     
 
-    for (int k = 0; k < dom.size[2]; k ++) {
-        for (int j = 0; j < dom.size[1]; j ++) {
-            for (int i = 0; i < dom.size[0]; i ++) {
-                int cur = Util::id(i,j,k,dom.size);
-                printf("%10.3e %10.3e %10.3e\n", a.get(cur, 0), a.get(cur, 1), a.get(cur, 2));
-            }
-        }
-    }
+    // for (int k = 0; k < dom.size[2]; k ++) {
+    //     for (int j = 0; j < dom.size[1]; j ++) {
+    //         for (int i = 0; i < dom.size[0]; i ++) {
+    //             int cur = Util::id(i,j,k,dom.size);
+    //             printf("%10.3e %10.3e %10.3e\n", a.get(cur, 0), a.get(cur, 1), a.get(cur, 2));
+    //         }
+    //     }
+    // }
 
     for(int i = 0; i < dom.num; i ++) {
         printf("%10.3e ", t.get(i));
     }
     printf("\n");
 
-    for(int i = 0; i < dom.num; i ++) {
-        printf("%10.3e ", rhs.get(i));
-    }
-    printf("\n");
+    // for(int i = 0; i < dom.num; i ++) {
+    //     printf("%10.3e ", rhs.get(i));
+    // }
+    // printf("\n");
 
-    for(int i = 0; i < dom.num; i ++) {
-        printf("%10.3e ", res.get(i));
-    }
-    printf("\n");
+    // for(int i = 0; i < dom.num; i ++) {
+    //     printf("%10.3e ", res.get(i));
+    // }
+    // printf("\n");
 
-    calc_res(a, t, rhs, res, norm, mesh, dom, stencil_t::d1s3);
-    res.update_self();
-    for(int i = 0; i < dom.num; i ++) {
-        printf("%10.3e ", res.get(i));
-    }
-    printf("\n");
+    // calc_res(a, t, rhs, res, norm, mesh, dom, stencil_t::d1s3);
+    // res.update_self();
+    // for(int i = 0; i < dom.num; i ++) {
+    //     printf("%10.3e ", res.get(i));
+    // }
+    // printf("\n");
 
     FILE *fo;
     fo = fopen("final.csv", "w+t");

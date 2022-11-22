@@ -9,6 +9,6 @@ const real_t TR        = 1e2;
 const real_t sor_omega = 1.0;
 
 const real_t L     = 1;
-const int    N     = 10;
+const int    N     = 1000;
 
 #endif
