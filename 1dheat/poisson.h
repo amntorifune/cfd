@@ -410,14 +410,14 @@ static void poisson_pbicgstab(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_
     // }
     // printf("\n");
 
-    assign<real_t>(_r, r);
+    _r = r;
     // _r.update_self();
     // for(int i = 0; i < dom.num; i ++) {
     //     printf("%10.3e ", _r.get(i));
     // }
     // printf("\n");
 
-    assign<real_t>(q, 0);
+    q     = 0;
     _rho  = 1;
     alpha = 0;
     omega = 1;
@@ -441,18 +441,18 @@ static void poisson_pbicgstab(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_
         }
 
         if (it == 0) {
-            assign<real_t>(p, r);
+            p = r;
         } else {
             beta = (rho / _rho) * (alpha / omega);
             pbicgstab_1(p, q, r, beta, omega, dom);
         }
 
-        assign<real_t>(_p, 0);
+        _p = 0;
         precondition_sor(a, _p, p, mesh, dom, 5);
         calc_ax(a, _p, q, mesh, dom, stencil);
         alpha = rho / dot2(_r, q, dom);
         pbicgstab_2(s, q, r, alpha, dom);
-        assign<real_t>(_s, 0);
+        _s = 0;
         precondition_sor(a, _s, s, mesh, dom, 5);
         calc_ax(a, _s, t, mesh, dom, stencil);
         omega = dot2(t, s, dom) / dot2(t, t, dom);

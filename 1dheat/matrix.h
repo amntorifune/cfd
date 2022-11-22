@@ -1,8 +1,9 @@
 #ifndef _MATRIX_H
 #define _MATRIX_H 1
 
-#include <string.h>
-#include <math.h>
+#include <cstring>
+#include <cmath>
+#include <iostream>
 #include "type.h"
 #include "dom.h"
 #include "util.h"
@@ -23,8 +24,8 @@ public:
     void off_device();
     void update_device();
     void update_self();
-    Matrix<T> &operator=(const Matrix<T> &rhs);
-    Matrix<T> &operator=(const T value);
+    Matrix<T> &operator=(const Matrix<T> &b);
+    Matrix<T> &operator=(const T &b);
     ~Matrix();
 };
 
@@ -78,18 +79,18 @@ Matrix<T>::~Matrix() {
 }
 
 template<class T>
-static void assign(Matrix<real_t> &a, Matrix<real_t> &b) {
-    #pragma acc kernels loop independent present(a, b)
-    for (int i = 0; i < a.num; i ++) {
-        a.get(i) = b.get(i);
+Matrix<T> & Matrix<T>::operator=(const Matrix<T> &b) {
+    #pragma acc kernels loop independent present(this[0:1], b)
+    for (int i = 0; i < num; i ++) {
+        mat[i] = b.mat[i];
     }
 }
 
 template<class T>
-static void assign(Matrix<real_t> &a, T b) {
-    #pragma acc kernels loop independent present(a) copyin(b)
-    for (int i = 0; i < a.num; i ++) {
-        a.get(i) = b;
+Matrix<T> & Matrix<T>::operator=(const T &b) {
+    #pragma acc kernels loop independent present(this[0:1]) copyin(b)
+    for (int i = 0; i < num; i ++) {
+        mat[i] = b;
     }
 }
 
