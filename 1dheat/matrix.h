@@ -79,19 +79,21 @@ Matrix<T>::~Matrix() {
 }
 
 template<class T>
-Matrix<T> & Matrix<T>::operator=(const Matrix<T> &b) {
+Matrix<T> &Matrix<T>::operator=(const Matrix<T> &b) {
     #pragma acc kernels loop independent present(this[0:1], b)
     for (int i = 0; i < num; i ++) {
         mat[i] = b.mat[i];
     }
+    return *this;
 }
 
 template<class T>
-Matrix<T> & Matrix<T>::operator=(const T &b) {
+Matrix<T> &Matrix<T>::operator=(const T &b) {
     #pragma acc kernels loop independent present(this[0:1]) copyin(b)
     for (int i = 0; i < num; i ++) {
         mat[i] = b;
     }
+    return *this;
 }
 
 #endif
