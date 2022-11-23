@@ -323,6 +323,36 @@ static void pbicgstab_4(Matrix<real_t> &r, Matrix<real_t> &s, Matrix<real_t> &t,
     }
 }
 
+static void precondition_jacobi(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_t> &b, Mesh &mesh, Dom &dom, int maxit) {
+    Matrix<real_t> _x(x);
+    _x.to_device();
+
+    for (int it = 0; it < maxit; it ++) {
+        _x = x;
+        #pragma acc kernels loop independent collapse(3) present(a, x, b, _x, mesh, dom)
+        for (int i = 0; i < dom.size[0]; i ++) {
+            for (int j = 0; j < dom.size[1]; j ++) {
+                for (int k = 0; k < dom.size[2]; k ++) {
+                    int    cur = Util::id(i,j,k,dom.size);
+                    real_t cr  = a.get(cur, 2);
+                    real_t cc  = a.get(cur, 1);
+                    real_t cl  = a.get(cur, 0);
+                    int    ir  = mesh.map.get(cur, 3);
+                    int    il  = mesh.map.get(cur, 0);
+                    int    ic  = cur;
+                    real_t _r  = _x.get(ir);
+                    real_t _l  = _x.get(il);
+                    real_t _c  = _x.get(ic);
+                    real_t _d  = (b.get(ic) - (_r * cr + _c * cc + _l * cl)) / cc;
+                    x.get(ic)  = _c + 0.9 * _d;
+                }
+            }
+        }
+    }
+
+    _x.off_device();
+}
+
 static void precondition_sor(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_t> &b, Mesh &mesh, Dom &dom, int maxit) {
     for (int it = 0; it < maxit; it ++) {
         #pragma acc kernels loop independent collapse(3) present(a, x, b, mesh, dom)
@@ -448,12 +478,12 @@ static void poisson_pbicgstab(Matrix<real_t> &a, Matrix<real_t> &x, Matrix<real_
         }
 
         _p = 0;
-        precondition_sor(a, _p, p, mesh, dom, 5);
+        precondition_jacobi(a, _p, p, mesh, dom, 10);
         calc_ax(a, _p, q, mesh, dom, stencil);
         alpha = rho / dot2(_r, q, dom);
         pbicgstab_2(s, q, r, alpha, dom);
         _s = 0;
-        precondition_sor(a, _s, s, mesh, dom, 5);
+        precondition_jacobi(a, _s, s, mesh, dom, 10);
         calc_ax(a, _s, t, mesh, dom, stencil);
         omega = dot2(t, s, dom) / dot2(t, t, dom);
         pbicgstab_3(x, _p, _s, alpha, omega, dom);

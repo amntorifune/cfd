@@ -18,6 +18,7 @@ public:
 public:
     Matrix(int row, int col);
     Matrix(Dom &dom, int col);
+    Matrix(Matrix<T> &src);
     T &get(int i, int j);
     T &get(int i);
     void to_device();
@@ -39,6 +40,12 @@ Matrix<T>::Matrix(int row, int col) : row(row), col(col) {
 template<class T>
 Matrix<T>::Matrix(Dom &dom, int col) : row(dom.num), col(col) {
     num = row * col;
+    mat = new T[num];
+    memset(mat, 0, num * sizeof(T));
+}
+
+template<class T>
+Matrix<T>::Matrix(Matrix<T> &src) : num(src.num), row(src.row), col(src.col) {
     mat = new T[num];
     memset(mat, 0, num * sizeof(T));
 }
